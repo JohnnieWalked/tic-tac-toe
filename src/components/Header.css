@@ -1,0 +1,64 @@
+nav ul {
+  --_gap: 2rem;
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+nav li {
+  overflow: hidden;
+  position: relative;
+  padding: calc(var(--_gap) / 2);
+  a {
+    transition: opacity 300ms;
+  }
+  a:hover {
+    opacity: 1;
+  }
+}
+
+nav li:not(:has(div))::after {
+  position: absolute;
+  content: '';
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background-color: hsl(var(--primary));
+  translate: var(--_translate, 0);
+  scale: var(--_width, 0) 1;
+  transition: scale 300ms var(--_scale-delay, 0ms),
+    translate 500ms var(--_translate-delay, 0ms);
+}
+
+.active {
+  filter: drop-shadow(0px 0px 7px hsl(var(--active)));
+}
+
+nav li:not(:has(div)):hover,
+nav li:not(:has(div)):focus-within {
+  --_width: 1;
+}
+
+@supports selector(:has(h1)) {
+  nav li:not(:has(div)):hover + li:not(:has(div)) {
+    --_translate: -100%;
+    --_scale-delay: 300ms;
+    --_translate-delay: 200ms;
+  }
+
+  nav li:not(:has(div)):has(+ :hover) {
+    --_scale-delay: 300ms;
+    --_translate: 100%;
+    --_translate-delay: 200ms;
+  }
+}
+
+nav li:has(div) {
+  padding: 0;
+}
+
+.logo {
+  stroke: hsl(var(--primary));
+}
