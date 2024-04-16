@@ -1,9 +1,16 @@
 import type { Metadata } from 'next';
+import { cn } from '@/lib/utils';
+
+/* providers */
+import { ThemeProvider } from '@/providers/ThemeProvider';
+
+/* components */
+import { Toaster } from '@/components/ui/toaster';
+import Header from '@/components/Header';
+
+/* styles */
 import { Inter as FontSans } from 'next/font/google';
 import './globals.css';
-import { cn } from '@/lib/utils';
-import { ThemeProvider } from '@/providers/ThemeProvider';
-import Header from '@/components/Header';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -36,6 +43,7 @@ export default function RootLayout({
         >
           <Header />
           <main className="container pt-10">{children}</main>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

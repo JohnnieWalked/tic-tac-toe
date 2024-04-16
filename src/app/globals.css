@@ -78,3 +78,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+.loader {
+  height: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 3px solid;
+  border-color: hsl(var(--primary)) hsl(var(--background));
+  animation: l1 1s infinite;
+}
+@keyframes l1 {
+  to {
+    transform: rotate(0.5turn);
+  }
+}

@@ -1,16 +1,25 @@
 'use client';
 
-import { motion, progress } from 'framer-motion';
-import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { ComponentProps } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import './Header.css';
 import { ThemeToggle } from './ThemeToggle';
+
+/* components */
+import Link from 'next/link';
+
+/* styles */
+import './Header.css';
 
 export default function Header() {
   return (
-    <nav className=" bg-background text-primary container">
+    <motion.nav
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ ease: 'easeInOut', duration: 0.7 }}
+      className=" bg-background text-primary container"
+    >
       <ul className="items-center">
         <li>
           <div className="logo w-60 h-20 p-4 mx-7 flex items-center justify-center">
@@ -24,7 +33,8 @@ export default function Header() {
                 initial={{ pathLength: 0, fillOpacity: 0 }}
                 animate={{ pathLength: 1, fillOpacity: 1 }}
                 transition={{
-                  duration: 2,
+                  pathLength: { delay: 0.6, duration: 2 },
+                  fillOpacity: { delay: 0.6, duration: 4 },
                   ease: 'easeInOut',
                 }}
                 strokeDasharray="0 1"
@@ -35,7 +45,9 @@ export default function Header() {
                 initial={{ pathLength: 0, fillOpacity: 0 }}
                 animate={{ pathLength: 1, fillOpacity: 1 }}
                 transition={{
-                  duration: 2,
+                  delay: 0.6,
+                  pathLength: { delay: 0.6, duration: 2 },
+                  fillOpacity: { delay: 0.6, duration: 4 },
                   ease: 'easeInOut',
                 }}
                 strokeDasharray="0 1"
@@ -46,7 +58,9 @@ export default function Header() {
                 initial={{ pathLength: 0, fillOpacity: 0 }}
                 animate={{ pathLength: 1, fillOpacity: 1 }}
                 transition={{
-                  duration: 2,
+                  delay: 0.6,
+                  pathLength: { delay: 0.6, duration: 2 },
+                  fillOpacity: { delay: 0.6, duration: 4 },
                   ease: 'easeInOut',
                 }}
                 strokeDasharray="0 1"
@@ -57,7 +71,9 @@ export default function Header() {
                 initial={{ pathLength: 0, fillOpacity: 0 }}
                 animate={{ pathLength: 1, fillOpacity: 1 }}
                 transition={{
-                  duration: 2,
+                  delay: 0.6,
+                  pathLength: { delay: 0.6, duration: 2 },
+                  fillOpacity: { delay: 0.6, duration: 4 },
                   ease: 'easeInOut',
                 }}
                 strokeDasharray="0 1"
@@ -68,7 +84,9 @@ export default function Header() {
                 initial={{ pathLength: 0, fillOpacity: 0 }}
                 animate={{ pathLength: 1, fillOpacity: 1 }}
                 transition={{
-                  duration: 2,
+                  delay: 0.6,
+                  pathLength: { delay: 0.6, duration: 2 },
+                  fillOpacity: { delay: 0.6, duration: 4 },
                   ease: 'easeInOut',
                 }}
                 strokeDasharray="0 1"
@@ -79,7 +97,9 @@ export default function Header() {
                 initial={{ pathLength: 0, fillOpacity: 0 }}
                 animate={{ pathLength: 1, fillOpacity: 1 }}
                 transition={{
-                  duration: 2,
+                  delay: 0.6,
+                  pathLength: { delay: 0.6, duration: 2 },
+                  fillOpacity: { delay: 0.6, duration: 4 },
                   ease: 'easeInOut',
                 }}
                 strokeDasharray="0 1"
@@ -90,7 +110,9 @@ export default function Header() {
                 initial={{ pathLength: 0, fillOpacity: 0 }}
                 animate={{ pathLength: 1, fillOpacity: 1 }}
                 transition={{
-                  duration: 2,
+                  delay: 0.6,
+                  pathLength: { delay: 0.6, duration: 2 },
+                  fillOpacity: { delay: 0.6, duration: 4 },
                   ease: 'easeInOut',
                 }}
                 strokeDasharray="0 1"
@@ -101,7 +123,9 @@ export default function Header() {
                 initial={{ pathLength: 0, fillOpacity: 0 }}
                 animate={{ pathLength: 1, fillOpacity: 1 }}
                 transition={{
-                  duration: 2,
+                  delay: 0.6,
+                  pathLength: { delay: 0.6, duration: 2 },
+                  fillOpacity: { delay: 0.6, duration: 4 },
                   ease: 'easeInOut',
                 }}
                 strokeDasharray="0 1"
@@ -112,7 +136,9 @@ export default function Header() {
                 initial={{ pathLength: 0, fillOpacity: 0 }}
                 animate={{ pathLength: 1, fillOpacity: 1 }}
                 transition={{
-                  duration: 2,
+                  delay: 0.6,
+                  pathLength: { delay: 0.6, duration: 2 },
+                  fillOpacity: { delay: 0.6, duration: 4 },
                   ease: 'easeInOut',
                 }}
                 strokeDasharray="0 1"
@@ -123,7 +149,9 @@ export default function Header() {
                 initial={{ pathLength: 0, fillOpacity: 0 }}
                 animate={{ pathLength: 1, fillOpacity: 1 }}
                 transition={{
-                  duration: 2,
+                  delay: 0.6,
+                  pathLength: { delay: 0.6, duration: 2 },
+                  fillOpacity: { delay: 0.6, duration: 4 },
                   ease: 'easeInOut',
                 }}
                 strokeDasharray="0 1"
@@ -134,7 +162,9 @@ export default function Header() {
                 initial={{ pathLength: 0, fillOpacity: 0 }}
                 animate={{ pathLength: 1, fillOpacity: 1 }}
                 transition={{
-                  duration: 2,
+                  delay: 0.6,
+                  pathLength: { delay: 0.6, duration: 2 },
+                  fillOpacity: { delay: 0.6, duration: 4 },
                   ease: 'easeInOut',
                 }}
                 strokeDasharray="0 1"
@@ -161,7 +191,7 @@ export default function Header() {
           </div>
         </li>
       </ul>
-    </nav>
+    </motion.nav>
   );
 }
 

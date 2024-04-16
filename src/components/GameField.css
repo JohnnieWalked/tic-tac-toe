@@ -1,0 +1,52 @@
+.game_field {
+  display: grid;
+  grid-template-areas:
+    'square1 divider1 square2 divider2 square3'
+    '. divider1 . divider2 .'
+    'square4 divider1 square5 divider2 square6'
+    '. divider1 . divider2 .'
+    'square7 divider1 square8 divider2 square9';
+}
+
+.square1 {
+  grid-area: square1;
+}
+.square2 {
+  grid-area: square2;
+}
+.square3 {
+  grid-area: square3;
+}
+.square4 {
+  grid-area: square4;
+}
+.square5 {
+  grid-area: square5;
+}
+.square6 {
+  grid-area: square6;
+}
+.square7 {
+  grid-area: square7;
+}
+.square8 {
+  grid-area: square8;
+}
+.square9 {
+  grid-area: square9;
+}
+
+.divider1 {
+  grid-area: divider1;
+}
+.divider2 {
+  grid-area: divider2;
+}
+.divider3 {
+  grid-column: 1 / -1;
+  grid-row-start: 2;
+}
+.divider4 {
+  grid-column: 1 / -1;
+  grid-row-start: 4;
+}

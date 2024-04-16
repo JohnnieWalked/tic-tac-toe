@@ -1,0 +1,4 @@
+.divider {
+  box-shadow: inset 0px 0px 2px hsl(var(--background));
+  /* opacity: 0.5; */
+}
