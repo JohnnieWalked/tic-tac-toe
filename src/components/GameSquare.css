@@ -1,0 +1,3 @@
+.gameSquare {
+  stroke: hsl(var(--primary));
+}

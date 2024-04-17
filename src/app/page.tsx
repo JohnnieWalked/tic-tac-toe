@@ -15,7 +15,7 @@ export default function Home() {
         <UsernameForm />
       </div>
       <div className="w-max overflow-hidden">
-        <GameField />
+        <GameField animateGameplay disableClickSquare />
       </div>
     </section>
   );

@@ -13,6 +13,7 @@ export default function UsernameForm() {
   const { toast } = useToast();
   const [username, setUsername] = useState<string>();
 
+  /* put username into input if user has entered username before  */
   useEffect(() => {
     if (localStorage.getItem('username') !== username) {
       setUsername(localStorage.getItem('username') || '');
