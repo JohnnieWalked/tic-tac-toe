@@ -1,7 +1,11 @@
 'use client';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 import { ANIMATION_TEMPLATE } from '@/constants';
+
+import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+
+/* func-helpers */
+import { calculateWinner } from '@/helpers/calculateWinner';
 
 /* components */
 import GameSquare from './GameSquare';
@@ -13,7 +17,7 @@ import './GameField.css';
 type GameFieldProps = {
   animateGameplay: boolean;
   disableClickSquare: boolean;
-  templateGameField?: number[];
+  templateGameField?: number[][];
 };
 
 export default function GameField({
@@ -21,27 +25,39 @@ export default function GameField({
   disableClickSquare,
   animateGameplay,
 }: GameFieldProps) {
-  const [gameState, setGameState] = useState<number[]>([
-    0, 0, 0, 0, 0, 0, 0, 0, 0,
-  ]);
+  const [gameOver, setGameOver] = useState<boolean>(false);
+  const [gameState, setGameState] = useState<number[][]>();
 
-  useEffect(() => {
-    if (!animateGameplay && templateGameField) setGameState(templateGameField);
-  }, [animateGameplay, templateGameField]);
+  // useEffect(() => {
+  //   if (!animateGameplay && templateGameField) setGameState(templateGameField);
+  // }, [animateGameplay, templateGameField]);
 
   /* animation of gameplay */
   useEffect(() => {
     async function animation() {
       await new Promise((r) => setTimeout(r, 4000));
+
       for (let i = 0; i < ANIMATION_TEMPLATE.length; i++) {
-        setGameState(ANIMATION_TEMPLATE[i]);
+        setGameState((state) => (state = ANIMATION_TEMPLATE[i]));
+
         await new Promise((r) => setTimeout(r, 1200));
+
+        const findWinner = calculateWinner(ANIMATION_TEMPLATE[i]);
+        if (findWinner) {
+          console.log(findWinner, 'player wins');
+          return;
+        }
       }
     }
-    animation();
+    if (animateGameplay) animation();
   }, [animateGameplay]);
 
-  const renderedSquares = gameState.map((item, index) => {
+  /* end game */
+  // useEffect(() => {
+  //   if (calculateWinner(gameState)) setGameOver(true);
+  // }, [gameState]);
+
+  const renderedSquares = gameState?.flat().map((item, index) => {
     return (
       <motion.div key={index} className={`square${index + 1} w-full h-full`}>
         {<GameSquare player={item} isDisabled={disableClickSquare} />}
