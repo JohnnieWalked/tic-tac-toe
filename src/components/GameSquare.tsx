@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from './ui/button';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 type GameSquareProps = {
   player: 1 | 2 | number;
@@ -10,13 +10,13 @@ type GameSquareProps = {
   children?: React.ReactNode;
 };
 
-const draw = {
+export const draw = {
   hidden: { pathLength: 0 },
   visible: () => {
     return {
       pathLength: 1,
       transition: {
-        pathLength: { type: 'spring', duration: 1, bounce: 0 },
+        pathLength: { duration: 1 },
       },
     };
   },

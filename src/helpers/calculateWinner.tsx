@@ -41,40 +41,48 @@ export function calculateWinner(array: number[][], fieldSize = 3) {
     if (recursiveCheck(i, i + fieldSize)) {
       console.log('vertical win');
       return {
-        endGameAnimationStartFrom: `${i}x`,
+        /* 
+          logic: make a proportion and find end of square; after that we divide full width/height of gameField by FIELD_SIZE and after divide by 2 to find center of block
+        */
+        endGameAnimationStartFrom: {
+          x1: `${((i + 1) / fieldSize) * 100 - 100 / fieldSize / 2}%`, //  i + 1 is needed to avoid starting from 0
+          y1: `0%`,
+          x2: `${((i + 1) / fieldSize) * 100 - 100 / fieldSize / 2}%`,
+          y2: '100%',
+        },
         winner: array.flat()[i],
       };
     }
   }
 
   /* horizontal check */
-  for (let i = 0; i < array.length; i++) {
-    if (array[i].every((item) => array[i][0] && item && item === array[i][0])) {
-      console.log('horizontal win');
-      return {
-        endGameAnimationStartFrom: `${i}y`,
-        winner: array[i][0],
-      };
-    }
-  }
+  // for (let i = 0; i < array.length; i++) {
+  //   if (array[i].every((item) => array[i][0] && item && item === array[i][0])) {
+  //     console.log('horizontal win');
+  //     return {
+  //       endGameAnimationStartFrom: `${i}y`,
+  //       winner: array[i][0],
+  //     };
+  //   }
+  // }
 
   /* left-top-corner-diagonal check */
-  if (recursiveCheck(0, 0 + fieldSize, 1)) {
-    console.log('left-corner-diagonal win');
-    return {
-      endGameAnimationStartFrom: 'top-left-corner',
-      winner: array.flat()[0],
-    };
-  }
+  // if (recursiveCheck(0, 0 + fieldSize, 1)) {
+  //   console.log('left-corner-diagonal win');
+  //   return {
+  //     endGameAnimationStartFrom: 'top-left-corner',
+  //     winner: array.flat()[0],
+  //   };
+  // }
 
   /* right-top-corner-diagonal check */
-  if (recursiveCheck(fieldSize - 1, fieldSize - 1 + fieldSize, -1)) {
-    console.log('right-corner-diagonal win');
-    return {
-      endGameAnimationStartFrom: 'top-right-corner',
-      winner: array.flat()[fieldSize - 1],
-    };
-  }
+  // if (recursiveCheck(fieldSize - 1, fieldSize - 1 + fieldSize, -1)) {
+  //   console.log('right-corner-diagonal win');
+  //   return {
+  //     endGameAnimationStartFrom: 'top-right-corner',
+  //     winner: array.flat()[fieldSize - 1],
+  //   };
+  // }
 
   return null;
 }
