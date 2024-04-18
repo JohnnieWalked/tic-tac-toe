@@ -43,8 +43,9 @@ export default function GameField({
         await new Promise((r) => setTimeout(r, 1200));
 
         const findWinner = calculateWinner(ANIMATION_TEMPLATE[i]);
-        if (findWinner) {
-          console.log(findWinner, 'player wins');
+        if (findWinner?.winner) {
+          console.log(findWinner.winner, 'player wins');
+          console.log(findWinner.endGameAnimationStartFrom);
           return;
         }
       }

@@ -2,32 +2,48 @@ export function calculateWinner(array: number[][], fieldSize = 3) {
   if (array.length !== fieldSize) {
     throw new Error('Field size and game field do not match.');
   }
-  let horizontal = false;
-  let vertical = false;
-  let diagonal = false;
 
-  // /* recursion; created to optimize vertical-search logic for gamefield of any size */
-  function verticalCheck(index: number, nextIndex: number) {
-    /* check if nextValue is undefined (need because of last line of gameField) */
+  /* recursion; created to optimize vertical_&_diagonal search logic for gamefield of any size; shift is need for diagonally check */
+  function recursiveCheck(index: number, nextIndex: number, shift = 0) {
+    /* check if nextValue is undefined (need to understand when the game field will end) */
     if (array.flat()[nextIndex] === undefined) {
       return true;
     }
+
     /* check if firstValue and nextValue are valid AND if firstValue === nextValue */
     if (
       array.flat()[index] &&
-      array.flat()[nextIndex] &&
-      array.flat()[index] === array.flat()[nextIndex]
+      array.flat()[nextIndex + shift] &&
+      array.flat()[index] === array.flat()[nextIndex + shift]
     ) {
-      return verticalCheck(nextIndex, nextIndex + fieldSize);
+      /* 
+        shift is responsible for checking gamefield diagonally. logic will look like a stairs;
+        for example (values in '()' are arguments for function):
+      
+        2-1-2                                     (2)-1-2                                                  2-1-2
+        1-2-1 => first call: we pass indexes of > (1)-2-1 => second call (recursive): we pass indexes of > 1-(2)-1 (with shift already)
+        1-0-2                                      1-0-2                                                   1-(0)-2 (with shift already)
+       */
+      if (shift !== 0) {
+        return recursiveCheck(
+          nextIndex + shift,
+          nextIndex + fieldSize + shift,
+          shift
+        );
+      }
+      return recursiveCheck(nextIndex, nextIndex + fieldSize, shift);
     }
     return false;
   }
 
-  // /* vertical check */
-  for (let i = 0; i < fieldSize; i++) {
-    if (verticalCheck(i, i + fieldSize)) {
+  /* vertical check */
+  for (let i = 0; i < array.length; i++) {
+    if (recursiveCheck(i, i + fieldSize)) {
       console.log('vertical win');
-      return array.flat()[i];
+      return {
+        endGameAnimationStartFrom: `${i}x`,
+        winner: array.flat()[i],
+      };
     }
   }
 
@@ -35,8 +51,29 @@ export function calculateWinner(array: number[][], fieldSize = 3) {
   for (let i = 0; i < array.length; i++) {
     if (array[i].every((item) => array[i][0] && item && item === array[i][0])) {
       console.log('horizontal win');
-      return array[i][0];
+      return {
+        endGameAnimationStartFrom: `${i}y`,
+        winner: array[i][0],
+      };
     }
+  }
+
+  /* left-top-corner-diagonal check */
+  if (recursiveCheck(0, 0 + fieldSize, 1)) {
+    console.log('left-corner-diagonal win');
+    return {
+      endGameAnimationStartFrom: 'top-left-corner',
+      winner: array.flat()[0],
+    };
+  }
+
+  /* right-top-corner-diagonal check */
+  if (recursiveCheck(fieldSize - 1, fieldSize - 1 + fieldSize, -1)) {
+    console.log('right-corner-diagonal win');
+    return {
+      endGameAnimationStartFrom: 'top-right-corner',
+      winner: array.flat()[fieldSize - 1],
+    };
   }
 
   return null;

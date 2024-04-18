@@ -78,3 +78,17 @@ export const ANIMATION_TEMPLATE = [
 //     [0, 0, 0],
 //   ],
 // ];
+
+/* DIAGONAL CHECK */
+// export const ANIMATION_TEMPLATE = [
+//   [
+//     [2, 0, 0],
+//     [0, 2, 0],
+//     [0, 0, 2],
+//   ],
+//   // [
+//   //   [0, 0, 1],
+//   //   [0, 1, 0],
+//   //   [1, 0, 0],
+//   // ],
+// ];
