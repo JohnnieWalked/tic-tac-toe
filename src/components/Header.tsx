@@ -180,9 +180,6 @@ export default function Header() {
           <NavLink href={'/guide'}>How to play</NavLink>
         </li>
         <li>
-          <NavLink href={'/about'}>About</NavLink>
-        </li>
-        <li>
           <NavLink href={'/new-game'}>New Game</NavLink>
         </li>
         <li className="ml-auto mr-7">

@@ -28,6 +28,7 @@ export default function EndGameLine({ x1, x2, y1, y2 }: EndGameLineParams) {
         strokeWidth={5}
         strokeLinecap="round"
         stroke="hsl(var(--primary))"
+        opacity={0.8}
       />
     </motion.svg>
   );

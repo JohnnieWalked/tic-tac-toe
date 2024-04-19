@@ -41,6 +41,7 @@ app.prepare().then(() => {
         errors: result.error.flatten().fieldErrors,
       });
     } else {
+      res.cookie('username', result.data.username);
       res.status(200).json(result.data.username).end();
     }
   });

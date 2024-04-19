@@ -15,10 +15,8 @@ export default function UsernameForm() {
 
   /* put username into input if user has entered username before  */
   useEffect(() => {
-    if (localStorage.getItem('username') !== username) {
-      setUsername(localStorage.getItem('username') || '');
-    }
-  }, [username]);
+    fetch('/api/get-username').then((data) => console.log(data.body));
+  }, []);
 
   const handleSubmit = async (formData: FormData) => {
     try {
@@ -32,7 +30,6 @@ export default function UsernameForm() {
       console.log(response);
 
       if (response.status === 200) {
-        localStorage.setItem('username', response.data);
         toast({
           title: 'Success!',
           description: 'Username was successfuly assigned.',

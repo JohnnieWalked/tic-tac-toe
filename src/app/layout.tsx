@@ -11,6 +11,7 @@ import Header from '@/components/Header';
 /* styles */
 import { Inter as FontSans } from 'next/font/google';
 import './globals.css';
+// import '../styles/styles.scss';
 
 const fontSans = FontSans({
   subsets: ['latin'],
