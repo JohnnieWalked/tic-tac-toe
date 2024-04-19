@@ -1,7 +1,15 @@
 import GameField from '@/components/GameField';
 import UsernameForm from '@/components/UsernameForm';
 
-export default function Home() {
+interface HomePageParams {
+  searchParams: {
+    error?: string;
+  };
+}
+
+export default function HomePage({ searchParams }: HomePageParams) {
+  const { error } = searchParams;
+
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 place-items-center">
       <div className="flex flex-col gap-10">
@@ -12,7 +20,7 @@ export default function Home() {
           Before proceed, please, make sure You entered your username and
           familiar with game rules. If not, visit <q>How to play</q> page.
         </div>
-        <UsernameForm />
+        <UsernameForm error={error} />
       </div>
       <div className="w-max overflow-hidden">
         <GameField animateGameplay disableClickSquare />

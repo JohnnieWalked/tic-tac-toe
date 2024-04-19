@@ -1,7 +1,7 @@
 'use client';
 import { ANIMATION_TEMPLATE, FIELD_SIZE } from '@/constants';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 /* func-helpers */
@@ -43,10 +43,12 @@ export default function GameField({
 
   /* animation of gameplay */
   useEffect(() => {
+    let i = 0;
+
     async function animation() {
       await new Promise((r) => setTimeout(r, 4000));
 
-      for (let i = 0; i < ANIMATION_TEMPLATE.length; i++) {
+      for (i; i < ANIMATION_TEMPLATE.length; i++) {
         setGameState((state) => (state = ANIMATION_TEMPLATE[i]));
 
         await new Promise((r) => setTimeout(r, 1200));
@@ -61,7 +63,13 @@ export default function GameField({
         }
       }
     }
+
     if (animateGameplay) animation();
+
+    /* clean up is declared to break loop after leaving the page */
+    return () => {
+      i = 999;
+    };
   }, [animateGameplay]);
 
   /* end game */

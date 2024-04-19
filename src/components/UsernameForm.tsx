@@ -1,5 +1,5 @@
 'use client';
-
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from './ui/use-toast';
 import axios, { AxiosError } from 'axios';
@@ -9,14 +9,35 @@ import PrimaryButton from './common/PrimaryButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export default function UsernameForm() {
+type UsernameFormProps = {
+  error?: string;
+};
+
+export default function UsernameForm({ error }: UsernameFormProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const { toast } = useToast();
   const [username, setUsername] = useState<string>();
 
-  /* put username into input if user has entered username before  */
+  /* put username into input from cookies if user has entered username before  */
   useEffect(() => {
-    fetch('/api/get-username').then((data) => console.log(data.body));
+    axios('/api/get-username').then((response) =>
+      setUsername(response.data.username)
+    );
   }, []);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: 'Error!',
+        description: `${
+          error.charAt(0).toUpperCase() + error.slice(1).replace('-', ' ')
+        }.`,
+        variant: 'destructive',
+      });
+      router.replace(pathname);
+    }
+  }, [toast, error]);
 
   const handleSubmit = async (formData: FormData) => {
     try {
@@ -24,7 +45,7 @@ export default function UsernameForm() {
         method: 'post',
         url: '/api/form-username-submit',
         data: {
-          username: formData.get('username'),
+          username: formData.get('username')?.toString().trim(),
         },
       });
       console.log(response);
