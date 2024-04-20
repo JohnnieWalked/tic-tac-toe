@@ -29,7 +29,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    // Extra attributes from the server: class,style - to avoid this error -> added suppressHydrationWarning
+    <html suppressHydrationWarning lang="en">
       <body
         className={cn(
           'min-h-screen bg-background font-sans antialiased',

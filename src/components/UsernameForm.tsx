@@ -31,13 +31,14 @@ export default function UsernameForm({ error }: UsernameFormProps) {
       toast({
         title: 'Error!',
         description: `${
-          error.charAt(0).toUpperCase() + error.slice(1).replace('-', ' ')
+          error.charAt(0).toUpperCase() + error.slice(1).replace(/-/g, ' ')
         }.`,
         variant: 'destructive',
       });
       router.replace(pathname);
     }
-  }, [toast, error]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error]);
 
   const handleSubmit = async (formData: FormData) => {
     try {
