@@ -27,6 +27,10 @@ app.prepare().then(() => {
   const io = new Server(expressServer);
 
   io.on('connection', (socket) => {
+    socket.on('create-game', (arg, callback) => {
+      console.log(arg);
+      callback('got it');
+    });
     console.log(socket.id, 'has connected');
   });
 

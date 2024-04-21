@@ -49,7 +49,6 @@ export default function UsernameForm({ error }: UsernameFormProps) {
           username: formData.get('username')?.toString().trim(),
         },
       });
-      console.log(response);
 
       if (response.status === 200) {
         toast({
@@ -69,7 +68,6 @@ export default function UsernameForm({ error }: UsernameFormProps) {
           title: 'Something went wrong...',
           variant: 'destructive',
         });
-        console.log(error);
       }
     }
   };
