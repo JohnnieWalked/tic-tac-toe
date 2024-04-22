@@ -1,6 +1,5 @@
 'use client';
 
-import axios, { AxiosError } from 'axios';
 import { useToast } from './ui/use-toast';
 import { socket } from '@/socket';
 
@@ -8,6 +7,7 @@ import { socket } from '@/socket';
 import PrimaryButton from './common/PrimaryButton';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { CreateGameSchema } from '@/schemas';
 
 export default function CreateRoomForm({
   isConnected,
@@ -18,23 +18,34 @@ export default function CreateRoomForm({
 
   function handleSubmit(formData: FormData) {
     if (!isConnected) return;
-    try {
-      socket.emit('create-game', 'GOVNO', (response: string) => {
-        console.log(response);
+    const result = CreateGameSchema.safeParse({
+      roomname: formData.get('roomname'),
+      password: formData.get('password'),
+    });
+
+    if (!result.success) {
+      toast({
+        title: 'Room name error!',
+        description: result.error.flatten().fieldErrors.roomname,
+        variant: 'destructive',
       });
+      return;
+    }
+
+    try {
+      socket.emit(
+        'create-game',
+        { roomname: result.data.roomname, password: result.data.password },
+        (response: string) => {
+          console.log(response);
+        }
+      );
     } catch (error) {
-      if (error instanceof AxiosError) {
-        toast({
-          title: 'Something went wrong...',
-          description: error.response?.data.errors.username,
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Something went wrong...',
-          variant: 'destructive',
-        });
-      }
+      toast({
+        title: 'Something went wrong...',
+        variant: 'destructive',
+      });
+      console.error(error);
     }
   }
 

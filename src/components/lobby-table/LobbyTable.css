@@ -1,0 +1,19 @@
+.lobby-form {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    'label label'
+    'input button';
+}
+
+.lobby-label {
+  align-self: center;
+  grid-area: label;
+}
+.lobby-input {
+  grid-area: input;
+}
+.lobby-button {
+  grid-area: button;
+}

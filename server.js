@@ -27,11 +27,25 @@ app.prepare().then(() => {
   const io = new Server(expressServer);
 
   io.on('connection', (socket) => {
-    socket.on('create-game', (arg, callback) => {
-      console.log(arg);
-      callback('got it');
-    });
     console.log(socket.id, 'has connected');
+    console.log(socket.rooms, 'socket rooms');
+
+    /* room creation */
+    socket.on('create-game', async ({ roomname, password }, callback) => {
+      socket.join(roomname);
+      console.log(socket.rooms);
+      const roomData = {
+        id: socket.id,
+        room: roomname,
+        isPrivate: password ? true : false,
+        amount: (await io.in(roomname).fetchSockets()).length,
+      };
+
+      /* send info about room to all connected sockets */
+      socket.broadcast.emit('new-room', roomData);
+
+      callback('success');
+    });
   });
 
   expressApp.post('/api/form-username-submit', async (req, res) => {

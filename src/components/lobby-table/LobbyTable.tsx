@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import './LobbyTable.css';
 
 import {
   ColumnDef,
@@ -21,6 +22,8 @@ import {
 } from '@/components/ui/table';
 
 import { Input } from '@/components/ui/input';
+import { Label } from '../ui/label';
+import PrimaryButton from '../common/PrimaryButton';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -46,15 +49,31 @@ export function LobbyTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center justify-center py-4">
-        <Input
-          placeholder="Filter rooms..."
-          value={(table.getColumn('room')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn('room')?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+      <div className="flex items-center justify-between py-4">
+        <div>
+          <Label>{'Filter rooms:'}</Label>
+          <Input
+            placeholder="Filter rooms..."
+            value={(table.getColumn('room')?.getFilterValue() as string) ?? ''}
+            onChange={(event) =>
+              table.getColumn('room')?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+        </div>
+        <div className=" w-1/2">
+          <form className="lobby-form" action="">
+            <Label className="lobby-label">{'Direct join:'}</Label>
+
+            <Input
+              placeholder="Enter room name"
+              className="max-w-sm lobby-input"
+            />
+            <PrimaryButton className="lobby-button" variant="ghost">
+              Join
+            </PrimaryButton>
+          </form>
+        </div>
       </div>
       <div className="rounded-md border h-96 overflow-y-scroll">
         <Table className="">

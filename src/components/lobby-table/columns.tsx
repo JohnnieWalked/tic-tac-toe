@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 
 export type Room = {
   id: string;
+  isPrivate: boolean;
   amount: number;
   room: string;
 };
@@ -17,7 +18,9 @@ export const columns: ColumnDef<Room>[] = [
     cell: ({ row }) => {
       return (
         <div className="flex items-center justify-center">
-          <FaLock className=" text-primary" />
+          {row.getValue('isPrivate') ? (
+            <FaLock className=" text-primary" />
+          ) : null}
         </div>
       );
     },

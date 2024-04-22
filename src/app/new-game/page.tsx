@@ -26,9 +26,7 @@ export default function NewGamePage() {
 
   /* socket */
   useEffect(() => {
-    if (socket.connected) {
-      onConnect();
-    }
+    if (socket.connected) onConnect();
     function onConnect() {
       setIsConnected(true);
       setTransport(socket.io.engine.transport.name);
@@ -36,16 +34,15 @@ export default function NewGamePage() {
         setTransport(transport.name);
       });
     }
-
     function onDisconnect() {
       setIsConnected(false);
       setTransport('N/A');
     }
-
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
 
-    socket.on('create-game', (data) => {
+    socket.on('new-room', (data: Room) => {
+      console.log(data);
       setLobbies((state) => [data, ...state]);
     });
 
