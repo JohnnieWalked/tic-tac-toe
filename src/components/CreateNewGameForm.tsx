@@ -42,10 +42,10 @@ export default function CreateRoomForm({
       socket.emit(
         'create-game',
         { roomname: result.data.roomname, password: result.data.password },
-        (response: string) => {
+        (response: { status: number }) => {
           /* after creating a game -> automatically throw user into game-room (lobby) */
-          if (response === 'success') {
-            dispatch(userSliceActions.updateIsInGameStatus(true));
+          if (response.status === 200) {
+            dispatch(userSliceActions.updateIsInGameStatus('in game'));
             dispatch(roomSliceActions.setRoomName(result.data.roomname));
             dispatch(roomSliceActions.setPassword(result.data.password));
           }
@@ -61,7 +61,7 @@ export default function CreateRoomForm({
   }
 
   return (
-    <form className="flex flex-col gap-4" action={(e) => handleSubmit(e)}>
+    <form className="flex flex-col gap-4 w-2/3" action={(e) => handleSubmit(e)}>
       <h3 className=" text-xl text-center font-bold">Create New Game</h3>
       <div>
         <Label>Room name:</Label>

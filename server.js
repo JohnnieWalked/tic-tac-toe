@@ -44,7 +44,19 @@ app.prepare().then(() => {
       /* send info about room to all connected sockets */
       socket.broadcast.emit('new-room', roomData);
 
-      callback('success');
+      callback({ status: 200 });
+    });
+
+    /* chat */
+    socket.on('chat message', ({ username, message, roomname }, callback) => {
+      const data = {
+        username,
+        message,
+      };
+
+      io.to(roomname).emit('chat message', data);
+
+      callback({ status: 200, username, message });
     });
   });
 

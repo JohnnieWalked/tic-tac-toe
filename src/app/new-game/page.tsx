@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { socket } from '../../socket';
-import { AnimatePresence } from 'framer-motion';
+import { SwitchTransition, CSSTransition } from 'react-transition-group';
 
 /* rtk */
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
@@ -23,6 +23,7 @@ export default function NewGamePage() {
   const dispatch = useAppDispatch();
   const { username, isInGame } = useAppSelector((state) => state.userSlice);
   const [isConnected, setIsConnected] = useState<boolean>();
+  const gameWrapperRef = useRef<HTMLDivElement | null>(null);
   const [transport, setTransport] = useState('N/A');
   const [lobbies, setLobbies] = useState<Room[]>([]);
 
@@ -78,23 +79,42 @@ export default function NewGamePage() {
           </span>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 place-items-center ">
-        <AnimatePresence>
-          {isInGame ? (
-            <>
-              <div className="w-max overflow-hidden">
-                <GameField animateGameplay={false} disableClickSquare={false} />
-              </div>
-              <Chat />
-            </>
-          ) : (
-            <>
-              <CreateRoomForm isConnected={isConnected} />
-              <LobbyTable columns={columns} data={lobbies} />
-            </>
-          )}
-        </AnimatePresence>
-      </div>
+      <SwitchTransition mode="out-in">
+        <CSSTransition
+          key={isInGame}
+          addEndListener={(done) => {
+            gameWrapperRef.current?.addEventListener(
+              'transitionend',
+              done,
+              false
+            );
+          }}
+          nodeRef={gameWrapperRef}
+          classNames="fade"
+        >
+          <div
+            ref={gameWrapperRef}
+            className="grid grid-cols-1 md:grid-cols-2 gap-10 place-items-center "
+          >
+            {isInGame === 'in game' ? (
+              <>
+                <div className="w-max overflow-hidden">
+                  <GameField
+                    animateGameplay={false}
+                    disableClickSquare={false}
+                  />
+                </div>
+                <Chat />
+              </>
+            ) : (
+              <>
+                <CreateRoomForm isConnected={isConnected} />
+                <LobbyTable columns={columns} data={lobbies} />
+              </>
+            )}
+          </div>
+        </CSSTransition>
+      </SwitchTransition>
     </section>
   );
 }

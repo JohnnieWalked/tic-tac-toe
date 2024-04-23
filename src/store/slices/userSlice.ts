@@ -2,9 +2,14 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '..';
 
-const initialState = {
+type UserSliceStateType = {
+  username: string;
+  isInGame: 'in game' | 'not in game';
+};
+
+const initialState: UserSliceStateType = {
   username: '',
-  isInGame: false,
+  isInGame: 'not in game',
 };
 
 export const userSlice = createSlice({
@@ -14,7 +19,10 @@ export const userSlice = createSlice({
     setUsername(state, action: PayloadAction<string>) {
       state.username = action.payload;
     },
-    updateIsInGameStatus(state, action: PayloadAction<boolean>) {
+    updateIsInGameStatus(
+      state,
+      action: PayloadAction<'in game' | 'not in game'>
+    ) {
       state.isInGame = action.payload;
     },
   },
