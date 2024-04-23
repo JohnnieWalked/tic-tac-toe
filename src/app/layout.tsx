@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { cn } from '@/lib/utils';
 
 /* providers */
-import { ThemeProvider } from '@/providers/ThemeProvider';
+import Providers from './providers';
 
 /* components */
 import { Toaster } from '@/components/ui/toaster';
@@ -37,16 +37,11 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <Providers>
           <Header />
           <main className="container pt-10">{children}</main>
           <Toaster />
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

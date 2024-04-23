@@ -2,18 +2,24 @@
 
 import { useToast } from './ui/use-toast';
 import { socket } from '@/socket';
+import { CreateGameSchema } from '@/schemas';
+
+/* rtk */
+import { useAppDispatch } from '@/hooks/hooks';
+import { userSliceActions } from '@/store/slices/userSlice';
+import { roomSliceActions } from '@/store/slices/roomSlice';
 
 /* components */
 import PrimaryButton from './common/PrimaryButton';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { CreateGameSchema } from '@/schemas';
 
 export default function CreateRoomForm({
   isConnected,
 }: {
   isConnected?: boolean;
 }) {
+  const dispatch = useAppDispatch();
   const { toast } = useToast();
 
   function handleSubmit(formData: FormData) {
@@ -37,7 +43,12 @@ export default function CreateRoomForm({
         'create-game',
         { roomname: result.data.roomname, password: result.data.password },
         (response: string) => {
-          console.log(response);
+          /* after creating a game -> automatically throw user into game-room (lobby) */
+          if (response === 'success') {
+            dispatch(userSliceActions.updateIsInGameStatus(true));
+            dispatch(roomSliceActions.setRoomName(result.data.roomname));
+            dispatch(roomSliceActions.setPassword(result.data.password));
+          }
         }
       );
     } catch (error) {
@@ -72,7 +83,7 @@ export default function CreateRoomForm({
         />
       </div>
 
-      <PrimaryButton className="" variant="secondary">
+      <PrimaryButton variant={'secondary'} className="">
         Create
       </PrimaryButton>
     </form>

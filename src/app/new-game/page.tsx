@@ -3,16 +3,25 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { socket } from '../../socket';
+import { AnimatePresence } from 'framer-motion';
+
+/* rtk */
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { roomSliceActions } from '@/store/slices/roomSlice';
+import { userSliceActions } from '@/store/slices/userSlice';
 
 /* components */
 import { columns } from '@/components/lobby-table/columns';
 import { LobbyTable } from '@/components/lobby-table/LobbyTable';
 import CreateRoomForm from '@/components/CreateNewGameForm';
+import GameField from '@/components/GameField';
+import Chat from '@/components/chat/Chat';
 
 import type { Room } from '@/components/lobby-table/columns';
 
 export default function NewGamePage() {
-  const [username, setUsername] = useState();
+  const dispatch = useAppDispatch();
+  const { username, isInGame } = useAppSelector((state) => state.userSlice);
   const [isConnected, setIsConnected] = useState<boolean>();
   const [transport, setTransport] = useState('N/A');
   const [lobbies, setLobbies] = useState<Room[]>([]);
@@ -20,9 +29,9 @@ export default function NewGamePage() {
   /* fetch username */
   useEffect(() => {
     axios('/api/get-username').then((response) =>
-      setUsername(response.data.username)
+      dispatch(userSliceActions.setUsername(response.data.username))
     );
-  }, []);
+  }, [dispatch]);
 
   /* socket */
   useEffect(() => {
@@ -69,10 +78,22 @@ export default function NewGamePage() {
           </span>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 ">
-        <CreateRoomForm isConnected={isConnected} />
-
-        <LobbyTable columns={columns} data={lobbies} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 place-items-center ">
+        <AnimatePresence>
+          {isInGame ? (
+            <>
+              <div className="w-max overflow-hidden">
+                <GameField animateGameplay={false} disableClickSquare={false} />
+              </div>
+              <Chat />
+            </>
+          ) : (
+            <>
+              <CreateRoomForm isConnected={isConnected} />
+              <LobbyTable columns={columns} data={lobbies} />
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
