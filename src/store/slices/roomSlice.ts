@@ -15,7 +15,7 @@ export const roomSlice = createSlice({
       state.roomname = action.payload;
     },
     setPassword(state, action: PayloadAction<string>) {
-      state.roomname = action.payload;
+      state.password = action.payload;
     },
   },
 });

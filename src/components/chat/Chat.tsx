@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { socket } from '@/socket';
 
 /* rtk */
@@ -25,10 +25,15 @@ export default function Chat() {
   function handleSubmit(formData: FormData) {
     const data = formData.get('chat-message') || '';
 
+    /* avoid sending empty msg */
+    if (!data.toString().trim()) return;
+
+    /* send msg to another user in the room; after response -> update chat history; */
     socket.emit(
       'chat message',
-      { username, message: data, roomname },
+      { message: data, roomname },
       (response: { status: number } & ChatMessage) => {
+        console.log(response);
         if (response.status === 200) {
           setHistory((state) => [
             ...state,
@@ -43,7 +48,7 @@ export default function Chat() {
     return (
       <ChatMessage
         key={index}
-        hostUsername={username}
+        isHostMessage={username === item.username}
         chatMemberUsername={
           index !== 0 && item.username === history[index - 1].username
             ? ''
@@ -55,9 +60,9 @@ export default function Chat() {
   });
 
   return (
-    <section className="flex flex-col w-full">
+    <section className="flex flex-col w-full gap-3">
       <h3 className=" text-center text-xl">Chat</h3>
-      <div className="flex flex-col h-96 overflow-y-auto">
+      <div className="flex flex-col h-96 overflow-y-auto border rounded-xl">
         {renderedMessages}
       </div>
       <form

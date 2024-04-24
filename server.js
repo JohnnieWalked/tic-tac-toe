@@ -27,8 +27,16 @@ app.prepare().then(() => {
   const io = new Server(expressServer);
 
   io.on('connection', (socket) => {
-    console.log(socket.id, 'has connected');
-    console.log(socket.rooms, 'socket rooms');
+    /* assign username to socket */
+    socket.on('send username', ({ username }) => {
+      console.log(username);
+      socket.username = username;
+      console.log({
+        'socket-username': socket.username,
+      });
+    });
+
+    console.log(socket.rooms);
 
     /* room creation */
     socket.on('create-game', async ({ roomname, password }, callback) => {
@@ -48,15 +56,22 @@ app.prepare().then(() => {
     });
 
     /* chat */
-    socket.on('chat message', ({ username, message, roomname }, callback) => {
+    socket.on('chat message', ({ message, roomname }, callback) => {
       const data = {
-        username,
+        username: socket.username,
         message,
       };
 
       io.to(roomname).emit('chat message', data);
 
-      callback({ status: 200, username, message });
+      callback({ status: 200, username: socket.username, message });
+    });
+
+    /* leave room */
+    socket.on('leave room', ({ roomname }, callback) => {
+      socket.leave(roomname);
+      console.log(socket.rooms);
+      callback({ status: 200 });
     });
   });
 

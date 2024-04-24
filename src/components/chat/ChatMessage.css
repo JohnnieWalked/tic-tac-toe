@@ -1,0 +1,29 @@
+.chat_msg--right {
+  border-bottom-right-radius: 0px;
+  position: relative;
+  &::after {
+    clip-path: polygon(0 0, 0 100%, 100% 100%);
+    position: absolute;
+    content: '';
+    background-color: hsl(var(--secondary));
+    width: 0.8rem;
+    right: -0.25rem;
+    bottom: -0.05rem;
+    height: 100%;
+  }
+}
+
+.chat_msg--left {
+  border-bottom-left-radius: 0px;
+  position: relative;
+  &::after {
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+    position: absolute;
+    content: '';
+    background-color: hsl(var(--secondary));
+    width: 0.8rem;
+    left: -0.25rem;
+    bottom: -0.05rem;
+    height: 100%;
+  }
+}
