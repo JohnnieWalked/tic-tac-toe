@@ -29,19 +29,12 @@ app.prepare().then(() => {
   io.on('connection', (socket) => {
     /* assign username to socket */
     socket.on('send username', ({ username }) => {
-      console.log(username);
       socket.username = username;
-      console.log({
-        'socket-username': socket.username,
-      });
     });
-
-    console.log(socket.rooms);
 
     /* room creation */
     socket.on('create-game', async ({ roomname, password }, callback) => {
       socket.join(roomname);
-      console.log(socket.rooms);
       const roomData = {
         id: socket.id,
         room: roomname,
@@ -54,6 +47,23 @@ app.prepare().then(() => {
 
       callback({ status: 200 });
     });
+
+    /* join room */
+    socket.on('join room', ({ roomname }, callback) => {
+      if (!io.sockets.adapter.rooms.get(roomname)) {
+        return callback({
+          success: false,
+          description: 'Room does not exist!',
+        });
+      }
+      socket.join(roomname);
+      return callback({
+        success: true,
+        description: 'Joined successfully!',
+      });
+    });
+
+    /* ask for password */
 
     /* chat */
     socket.on('chat message', ({ message, roomname }, callback) => {

@@ -24,6 +24,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '../ui/label';
 import PrimaryButton from '../common/PrimaryButton';
+import { joinRoom } from '@/helpers/joinRoom';
+import { useToast } from '../ui/use-toast';
+import JoinRoomForm from '../JoinRoomForm';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -34,6 +37,7 @@ export function LobbyTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const { toast } = useToast();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
@@ -62,17 +66,21 @@ export function LobbyTable<TData, TValue>({
           />
         </div>
         <div className=" w-1/2">
-          <form className="lobby-form" action="">
-            <Label className="lobby-label">{'Direct join:'}</Label>
+          <JoinRoomForm inputNameAttr="roomname" className="lobby-form">
+            <Label htmlFor="roomname" className="lobby-label">
+              {'Direct join:'}
+            </Label>
 
             <Input
+              id="roomname"
+              name="roomname"
               placeholder="Enter room name"
               className="max-w-sm lobby-input"
             />
             <PrimaryButton className="lobby-button" variant="ghost">
               Join
             </PrimaryButton>
-          </form>
+          </JoinRoomForm>
         </div>
       </div>
       <div className="rounded-md border h-96 overflow-y-scroll">
