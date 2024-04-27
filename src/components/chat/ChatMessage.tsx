@@ -21,8 +21,8 @@ export default function ChatMessage({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ ease: 'easeInOut', duration: 0.3 }}
-      className={`flex bg-secondary flex-col first-of-type:mt-4 my-1 mx-2 px-4 py-2 rounded-2xl border ${
-        isHostMessage ? 'self-end chat_msg--right' : 'chat_msg--left'
+      className={`flex bg-secondary max-w-[70%] flex-col first-of-type:mt-4 my-1 mx-2 px-4 py-2 rounded-2xl border ${
+        isHostMessage ? 'self-end chat_msg--right' : 'chat_msg--left self-start'
       }`}
     >
       <h4 className={'text-xs font-bold'}>{chatMemberUsername}</h4>

@@ -26,7 +26,7 @@ export default function CreateRoomForm({
     if (!isConnected) return;
     const result = CreateGameSchema.safeParse({
       roomname: formData.get('roomname'),
-      password: formData.get('password'),
+      // password: formData.get('password'),
     });
 
     if (!result.success) {
@@ -40,14 +40,26 @@ export default function CreateRoomForm({
 
     try {
       socket.emit(
-        'create-game',
-        { roomname: result.data.roomname, password: result.data.password },
-        (response: { status: number }) => {
+        'create game',
+        {
+          roomname: result.data.roomname /* , password: result.data.password */,
+        },
+        (response: { success: boolean; description: string }) => {
           /* after creating a game -> automatically throw user into game-room (lobby) */
-          if (response.status === 200) {
+          if (response.success) {
+            toast({
+              title: 'Success!',
+              description: 'Lobby has been created.',
+            });
             dispatch(userSliceActions.updateIsInGameStatus('in game'));
             dispatch(roomSliceActions.setRoomName(result.data.roomname));
-            dispatch(roomSliceActions.setPassword(result.data.password));
+            // dispatch(roomSliceActions.setPassword(result.data.password));
+          } else {
+            toast({
+              title: 'Oops...',
+              description: response.description,
+              variant: 'destructive',
+            });
           }
         }
       );
@@ -76,10 +88,11 @@ export default function CreateRoomForm({
       <div>
         <Label>Password:</Label>
         <Input
+          disabled
           className=""
           id="password"
           name="password"
-          placeholder="Leave empty to enable free access."
+          placeholder="Temporary unavailable..."
         />
       </div>
 

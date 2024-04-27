@@ -33,48 +33,75 @@ app.prepare().then(() => {
     });
 
     /* room creation */
-    socket.on('create-game', async ({ roomname, password }, callback) => {
+    socket.on('create game', async ({ roomname }, callback) => {
+      /* check if room with this name already exists */
+      if (io.sockets.adapter.rooms.get(roomname)) {
+        return callback({
+          success: false,
+          description: 'Room with this name already exists!',
+        });
+      }
+
       socket.join(roomname);
+
       const roomData = {
         id: socket.id,
         room: roomname,
-        isPrivate: password ? true : false,
         amount: (await io.in(roomname).fetchSockets()).length,
       };
 
       /* send info about room to all connected sockets */
-      socket.broadcast.emit('new-room', roomData);
+      socket.broadcast.emit('update room', roomData);
 
-      callback({ status: 200 });
+      callback({ success: true });
     });
 
     /* join room */
-    socket.on('join room', ({ roomname }, callback) => {
-      if (!io.sockets.adapter.rooms.get(roomname)) {
+    socket.on('join room', async ({ roomname }, callback) => {
+      /* get set of sockets room if exists */
+      const room = io.sockets.adapter.rooms.get(roomname);
+      if (!room) {
         return callback({
           success: false,
           description: 'Room does not exist!',
         });
       }
+
+      const amountOfSocketsInRoom = (await io.in(roomname).fetchSockets())
+        .length;
+
+      if (amountOfSocketsInRoom === 2) {
+        return callback({
+          success: false,
+          description: 'Room is full!',
+        });
+      }
       socket.join(roomname);
+
+      /* prepare updated info about room  */
+      const updatedDataForRoom = {
+        id: room.values().next().value /* get host id (will be always first) */,
+        room: roomname,
+        amount: 2,
+      };
+
+      /* send to all connected clients updated info about room */
+      socket.emit('update room', updatedDataForRoom);
+
       return callback({
         success: true,
         description: 'Joined successfully!',
       });
     });
 
-    /* ask for password */
-
     /* chat */
-    socket.on('chat message', ({ message, roomname }, callback) => {
+    socket.on('chat message', ({ message, roomname }) => {
       const data = {
         username: socket.username,
         message,
       };
 
       io.to(roomname).emit('chat message', data);
-
-      callback({ status: 200, username: socket.username, message });
     });
 
     /* leave room */

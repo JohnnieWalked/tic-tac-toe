@@ -31,6 +31,20 @@ export default function NewGamePage() {
   const [transport, setTransport] = useState('N/A');
   const [lobbies, setLobbies] = useState<Room[]>([]);
 
+  function updateOrCreateRoom(data: Room) {
+    setLobbies((state) => {
+      const findRoomIndexWithSameId = state.findIndex(
+        (item) => item.id === data.id
+      );
+      if (findRoomIndexWithSameId !== -1) {
+        const newState = [...state];
+        newState[findRoomIndexWithSameId] = data;
+        return newState;
+      }
+      return [data, ...state];
+    });
+  }
+
   function leaveRoom() {
     if (!roomname) {
       toast({
@@ -43,7 +57,7 @@ export default function NewGamePage() {
     socket.emit('leave room', { roomname }, (response: { status: number }) => {
       if (response.status === 200) {
         dispatch(roomSliceActions.setRoomName(''));
-        dispatch(roomSliceActions.setPassword(''));
+        // dispatch(roomSliceActions.setPassword(''));
         dispatch(userSliceActions.updateIsInGameStatus('not in game'));
       }
     });
@@ -76,20 +90,10 @@ export default function NewGamePage() {
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
 
-    /* add new room to state or update if room with same id already exists  */
-    socket.on('new-room', (data: Room) => {
-      console.log(data);
-      setLobbies((state) => {
-        const findRoomIndexWithSameId = state.findIndex(
-          (item) => item.id === data.id
-        );
-        if (findRoomIndexWithSameId !== -1) {
-          const newState = [...state];
-          newState[findRoomIndexWithSameId] = data;
-          return newState;
-        }
-        return [data, ...state];
-      });
+    /* add new created room to state or update if room with same id already exists  */
+    socket.on('update room', (data: Room) => {
+      console.log('New room was created or updated:', data);
+      updateOrCreateRoom(data);
     });
 
     return () => {
