@@ -1,31 +1,59 @@
 'use client';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useToast } from './ui/use-toast';
 import axios, { AxiosError } from 'axios';
+import { socket } from '@/socket';
+
+/* rtk */
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { RootState } from '@/store';
 
 /* components */
 import PrimaryButton from './common/PrimaryButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { fetchUsername } from '@/store/thunks/fetchUsername';
+import StatusBar from './StatusBar';
+import { userSliceActions } from '@/store/slices/userSlice';
 
 type UsernameFormProps = {
   error?: string;
 };
 
 export default function UsernameForm({ error }: UsernameFormProps) {
+  const dispatch = useAppDispatch();
+  const {
+    isLoading,
+    error: fetchUsernameError,
+    username,
+  } = useAppSelector((state: RootState) => state.userSlice);
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
-  const [username, setUsername] = useState<string>();
 
   /* put username into input from cookies if user has entered username before  */
   useEffect(() => {
-    axios('/api/get-username').then((response) =>
-      setUsername(response.data.username)
-    );
-  }, []);
+    if (username) return;
+    dispatch(fetchUsername())
+      .unwrap()
+      .then((response: string) => {
+        if (response) {
+          socket.auth = { username: response };
+          socket.connect();
+          toast({
+            title: 'Success!',
+            description:
+              'Username was successfuly assigned. You have been connected to game server.',
+          });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [dispatch, toast, username]);
 
+  /* show error */
   useEffect(() => {
     if (error) {
       toast({
@@ -41,6 +69,8 @@ export default function UsernameForm({ error }: UsernameFormProps) {
   }, [error]);
 
   const handleSubmit = async (formData: FormData) => {
+    socket.disconnect();
+    await new Promise((r) => setTimeout(r, 2000));
     try {
       const response = await axios({
         method: 'post',
@@ -51,9 +81,13 @@ export default function UsernameForm({ error }: UsernameFormProps) {
       });
 
       if (response.status === 200) {
+        dispatch(userSliceActions.setUsername(response.data));
+        socket.auth = { username: response.data };
+        socket.connect();
         toast({
           title: 'Success!',
-          description: 'Username was successfuly assigned.',
+          description:
+            'Username was successfuly assigned. You have been connected to game server.',
         });
       }
     } catch (error) {
@@ -83,13 +117,14 @@ export default function UsernameForm({ error }: UsernameFormProps) {
           id="username"
           name="username"
           placeholder="Your username"
-          defaultValue={username}
+          defaultValue={isLoading ? 'Loading...' : username}
           required
         />
       </div>
       <PrimaryButton variant={'outline'} className="">
         Submit
       </PrimaryButton>
+      <StatusBar className=" self-center" />
     </form>
   );
 }

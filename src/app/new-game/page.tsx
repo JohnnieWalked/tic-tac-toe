@@ -63,43 +63,12 @@ export default function NewGamePage() {
     });
   }
 
-  /* fetch username */
   useEffect(() => {
-    axios('/api/get-username').then((response) => {
-      /* send username and assign it to socket  */
-      socket.emit('send username', { username: response.data.username });
-      dispatch(userSliceActions.setUsername(response.data.username));
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  /* socket */
-  useEffect(() => {
-    if (socket.connected) onConnect();
-    function onConnect() {
-      setIsConnected(true);
-      setTransport(socket.io.engine.transport.name);
-      socket.io.engine.on('upgrade', (transport) => {
-        setTransport(transport.name);
-      });
-    }
-    function onDisconnect() {
-      setIsConnected(false);
-      setTransport('N/A');
-    }
-    socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
-
     /* add new created room to state or update if room with same id already exists  */
-    socket.on('update room', (data: Room) => {
-      console.log('New room was created or updated:', data);
+    socket.on('room event', (data: Room) => {
+      console.log('New room was created:', data);
       updateOrCreateRoom(data);
     });
-
-    return () => {
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
-    };
   }, []);
 
   return (
@@ -108,16 +77,6 @@ export default function NewGamePage() {
         <h2 className="">
           Username: <b className=" uppercase">{username}</b>
         </h2>
-        <div>
-          Status:{' '}
-          <span
-            className={` font-light ${
-              isConnected ? 'text-green-600' : 'text-red-700'
-            }`}
-          >
-            {isConnected ? 'connected' : 'disconnected'}
-          </span>
-        </div>
       </div>
       <SwitchTransition mode="out-in">
         <CSSTransition

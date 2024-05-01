@@ -3,6 +3,7 @@ import { ANIMATION_TEMPLATE, FIELD_SIZE } from '@/constants';
 
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { socket } from '@/socket';
 
 /* func-helpers */
 import { calculateWinner } from '@/helpers/calculateWinner';
@@ -36,10 +37,6 @@ export default function GameField({
   const [endLinePosition, setEndLinePosition] = useState<EndLinePosition>();
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [gameState, setGameState] = useState<number[][]>();
-
-  // useEffect(() => {
-  //   if (!animateGameplay && templateGameField) setGameState(templateGameField);
-  // }, [animateGameplay, templateGameField]);
 
   /* animation of gameplay */
   useEffect(() => {

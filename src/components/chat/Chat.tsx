@@ -64,6 +64,7 @@ export default function Chat() {
 
   return (
     <section className="flex flex-col w-full gap-3">
+      <div></div>
       <h3 className=" text-center text-xl">Chat</h3>
       <div className="flex flex-col h-96 overflow-y-auto border rounded-xl">
         {renderedMessages}

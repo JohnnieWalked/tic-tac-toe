@@ -26,11 +26,27 @@ app.prepare().then(() => {
   const expressServer = expressApp.listen(port);
   const io = new Server(expressServer);
 
+  io.use((socket, next) => {
+    const username = socket.handshake.auth.username;
+    if (!username) {
+      return next(new Error('invalid username'));
+    }
+    socket.username = username;
+    next();
+  });
+
   io.on('connection', (socket) => {
-    /* assign username to socket */
-    socket.on('send username', ({ username }) => {
-      socket.username = username;
-    });
+    console.log(socket.username);
+
+    /* fetch all users */
+    const users = [];
+    for (let [id, socket] of io.of('/').sockets) {
+      users.push({
+        userID: id,
+        username: socket.username,
+      });
+    }
+    console.log(users);
 
     /* room creation */
     socket.on('create game', async ({ roomname }, callback) => {
@@ -50,8 +66,8 @@ app.prepare().then(() => {
         amount: (await io.in(roomname).fetchSockets()).length,
       };
 
-      /* send info about room to all connected sockets */
-      socket.broadcast.emit('update room', roomData);
+      /* send info about room to all connected sockets (except room host) */
+      socket.broadcast.emit('room event', roomData);
 
       callback({ success: true });
     });
@@ -86,7 +102,7 @@ app.prepare().then(() => {
       };
 
       /* send to all connected clients updated info about room */
-      socket.emit('update room', updatedDataForRoom);
+      io.emit('room event', updatedDataForRoom);
 
       return callback({
         success: true,
@@ -113,7 +129,6 @@ app.prepare().then(() => {
   });
 
   expressApp.post('/api/form-username-submit', async (req, res) => {
-    await new Promise((r) => setTimeout(r, 2000));
     const result = FormSchema.safeParse({
       username: req.body.username,
     });
