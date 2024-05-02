@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useToast } from './ui/use-toast';
 import { socket } from '@/socket';
 import { CreateGameSchema } from '@/schemas';
@@ -14,16 +15,13 @@ import PrimaryButton from './common/PrimaryButton';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 
-export default function CreateRoomForm({
-  isConnected,
-}: {
-  isConnected?: boolean;
-}) {
+export default function CreateRoomForm() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const { toast } = useToast();
 
   function handleSubmit(formData: FormData) {
-    if (!isConnected) return;
+    if (!socket.connected) return;
     const result = CreateGameSchema.safeParse({
       roomname: formData.get('roomname'),
       // password: formData.get('password'),
@@ -53,6 +51,7 @@ export default function CreateRoomForm({
             });
             dispatch(userSliceActions.updateIsInGameStatus('in game'));
             dispatch(roomSliceActions.setRoomName(result.data.roomname));
+            router.push(`/new-game/${result.data.roomname}`);
             // dispatch(roomSliceActions.setPassword(result.data.password));
           } else {
             toast({

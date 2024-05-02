@@ -4,6 +4,7 @@ import { joinRoom } from '@/helpers/joinRoom';
 import { useAppDispatch } from '@/hooks/hooks';
 import { roomSliceActions } from '@/store/slices/roomSlice';
 import { userSliceActions } from '@/store/slices/userSlice';
+import { useRouter } from 'next/navigation';
 
 type JoinRoomProps = {
   inputNameAttr: string;
@@ -16,6 +17,7 @@ export default function JoinRoomForm({
   className,
   inputNameAttr,
 }: JoinRoomProps) {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const { toast } = useToast();
 
@@ -30,7 +32,7 @@ export default function JoinRoomForm({
         title: 'Success!',
         description: result.description,
       });
-      return;
+      return router.push(`/new-game/${roomname}`);
     }
 
     toast({

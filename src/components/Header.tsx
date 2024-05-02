@@ -8,6 +8,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 /* components */
 import Link from 'next/link';
+import StatusBar from './StatusBar';
 
 /* styles */
 import './Header.css';
@@ -188,6 +189,7 @@ export default function Header() {
           </div>
         </li>
       </ul>
+      <StatusBar className=" text-lg flex justify-between items-center pt-10 " />
     </motion.nav>
   );
 }

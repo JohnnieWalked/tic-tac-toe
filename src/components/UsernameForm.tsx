@@ -13,8 +13,6 @@ import { RootState } from '@/store';
 import PrimaryButton from './common/PrimaryButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { fetchUsername } from '@/store/thunks/fetchUsername';
-import StatusBar from './StatusBar';
 import { userSliceActions } from '@/store/slices/userSlice';
 
 type UsernameFormProps = {
@@ -31,27 +29,6 @@ export default function UsernameForm({ error }: UsernameFormProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
-
-  /* put username into input from cookies if user has entered username before  */
-  useEffect(() => {
-    if (username) return;
-    dispatch(fetchUsername())
-      .unwrap()
-      .then((response: string) => {
-        if (response) {
-          socket.auth = { username: response };
-          socket.connect();
-          toast({
-            title: 'Success!',
-            description:
-              'Username was successfuly assigned. You have been connected to game server.',
-          });
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [dispatch, toast, username]);
 
   /* show error */
   useEffect(() => {
@@ -124,7 +101,6 @@ export default function UsernameForm({ error }: UsernameFormProps) {
       <PrimaryButton variant={'outline'} className="">
         Submit
       </PrimaryButton>
-      <StatusBar className=" self-center" />
     </form>
   );
 }

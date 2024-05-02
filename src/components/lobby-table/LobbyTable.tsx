@@ -24,9 +24,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '../ui/label';
 import PrimaryButton from '../common/PrimaryButton';
-import { joinRoom } from '@/helpers/joinRoom';
-import { useToast } from '../ui/use-toast';
 import JoinRoomForm from '../JoinRoomForm';
+import Subheader from '../common/Subheader';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -37,7 +36,6 @@ export function LobbyTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const { toast } = useToast();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
@@ -53,6 +51,7 @@ export function LobbyTable<TData, TValue>({
 
   return (
     <div>
+      <Subheader>Available Lobbies</Subheader>
       <div className="flex items-center justify-between py-4">
         <div>
           <Label>{'Filter rooms:'}</Label>

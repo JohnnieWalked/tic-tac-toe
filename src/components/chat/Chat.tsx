@@ -66,9 +66,12 @@ export default function Chat() {
     <section className="flex flex-col w-full gap-3">
       <div></div>
       <h3 className=" text-center text-xl">Chat</h3>
-      <div className="flex flex-col h-96 overflow-y-auto border rounded-xl">
-        {renderedMessages}
-        <div ref={chatEndRef} />
+      <div className="flex">
+        <div className="flex flex-col h-96 overflow-y-auto border rounded-xl">
+          {renderedMessages}
+          <div ref={chatEndRef} />
+        </div>
+        <div>MEMBERS</div>
       </div>
       <form
         ref={formRef}
