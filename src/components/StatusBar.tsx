@@ -42,23 +42,6 @@ function StatusBar(
     });
   }, [dispatch]);
 
-  // dispatch(fetchUsername())
-  //     .unwrap()
-  //     .then((response: string) => {
-  //       if (response) {
-  //         socket.auth = { username: response };
-  //         socket.connect();
-  //         toast({
-  //           title: 'Success!',
-  //           description:
-  //             'Username was successfuly assigned. You have been connected to game server.',
-  //         });
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.log(error);
-  //     });
-
   useEffect(() => {
     if (socket.connected) {
       onConnect();

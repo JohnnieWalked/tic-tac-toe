@@ -2,9 +2,17 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction, SerializedError } from '@reduxjs/toolkit';
 import type { RootState } from '..';
 import { fetchUsername } from '../thunks/fetchUsername';
+import { produce } from 'immer';
 
-type UserSliceStateType = {
+export type UserInfo = {
   username: string;
+  userID: string;
+  connected: boolean;
+};
+
+export type UserSliceStateType = {
+  username: string;
+  allUsersArray: UserInfo[];
   isInGame: 'in game' | 'not in game';
   isLoading: boolean;
   error: null | SerializedError;
@@ -12,6 +20,7 @@ type UserSliceStateType = {
 
 const initialState: UserSliceStateType = {
   username: '',
+  allUsersArray: [],
   isInGame: 'not in game',
   isLoading: false,
   error: null,
@@ -23,6 +32,24 @@ export const userSlice = createSlice({
   reducers: {
     setUsername(state, action: PayloadAction<string>) {
       state.username = action.payload;
+    },
+    updateAllUsersData(
+      state,
+      action: PayloadAction<Pick<UserSliceStateType, 'allUsersArray'>>
+    ) {
+      /* we used PRODUCE from IMMER to avoid mutation; logic => we check for existing user with same userID and set status; if user hasn't been found => just add new user;  */
+      return produce(state, (draft) => {
+        action.payload.allUsersArray.forEach((user) => {
+          for (let i = 0; i < draft.allUsersArray.length; i++) {
+            const existingUser = draft.allUsersArray[i];
+            if (existingUser.userID === user.userID) {
+              existingUser.connected = user.connected;
+              return;
+            }
+          }
+          draft.allUsersArray.push(user);
+        });
+      });
     },
     updateIsInGameStatus(
       state,
