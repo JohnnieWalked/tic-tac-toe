@@ -10,7 +10,7 @@ import { Socket } from 'socket.io-client';
 /* rtk */
 import { useAppSelector, useAppDispatch } from '@/hooks/hooks';
 import { fetchUsername } from '@/store/thunks/fetchUsername';
-import { userSliceActions } from '@/store/slices/userSlice';
+import { UserInfo, userSliceActions } from '@/store/slices/userSlice';
 
 function StatusBar(
   props: DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
@@ -57,8 +57,20 @@ function StatusBar(
       setIsConnected(false);
       setTransport('N/A');
     }
+    function updateAllUsersData(data: UserInfo[]) {
+      dispatch(userSliceActions.updateAllUsersData(data));
+    }
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
+    socket.on('users', (data: UserInfo[]) => {
+      console.log(data);
+      updateAllUsersData(data);
+    });
+    socket.on('user connected', (data: UserInfo) => updateAllUsersData([data]));
+    socket.on('user disconnected', (userID: string) =>
+      dispatch(userSliceActions.userDisconnected(userID))
+    );
 
     socket.on('connect_error', (err) => {
       if (err.message === 'invalid username') {
@@ -74,8 +86,11 @@ function StatusBar(
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off('connect_error');
+      socket.off('users');
+      socket.off('user connected');
+      socket.off('user disconnected');
     };
-  }, [toast]);
+  }, [dispatch, toast]);
 
   return (
     <div {...props}>

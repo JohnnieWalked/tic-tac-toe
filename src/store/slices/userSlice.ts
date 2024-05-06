@@ -33,13 +33,20 @@ export const userSlice = createSlice({
     setUsername(state, action: PayloadAction<string>) {
       state.username = action.payload;
     },
-    updateAllUsersData(
-      state,
-      action: PayloadAction<Pick<UserSliceStateType, 'allUsersArray'>>
-    ) {
-      /* we used PRODUCE from IMMER to avoid mutation; logic => we check for existing user with same userID and set status; if user hasn't been found => just add new user;  */
+    userDisconnected(state, action: PayloadAction<string>) {
       return produce(state, (draft) => {
-        action.payload.allUsersArray.forEach((user) => {
+        draft.allUsersArray.forEach((user) => {
+          if (user.userID === action.payload) {
+            user.connected = false;
+          }
+        });
+      });
+    },
+    updateAllUsersData(state, action: PayloadAction<UserInfo[]>) {
+      /* we used PRODUCE from IMMER to avoid mutation; logic => we check for existing user with same userID and set status; if user hasn't been found => just add new user;  */
+      console.log(action.payload);
+      return produce(state, (draft) => {
+        action.payload.forEach((user) => {
           for (let i = 0; i < draft.allUsersArray.length; i++) {
             const existingUser = draft.allUsersArray[i];
             if (existingUser.userID === user.userID) {

@@ -13,14 +13,13 @@ import Subheader from '@/components/common/Subheader';
 import type { Room } from '@/components/lobby-table/columns';
 
 /* rtk */
-import { useAppDispatch } from '@/hooks/hooks';
-import {
-  userSliceActions,
-  type UserSliceStateType,
-} from '@/store/slices/userSlice';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { UserInfo, userSliceActions } from '@/store/slices/userSlice';
 
 export default function NewGamePage() {
   const dispatch = useAppDispatch();
+  const { allUsersArray } = useAppSelector((state) => state.userSlice);
+  const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
   const [lobbies, setLobbies] = useState<Room[]>([]);
 
   function updateOrCreateRoom(data: Room) {
@@ -44,21 +43,25 @@ export default function NewGamePage() {
       updateOrCreateRoom(data);
     });
 
-    socket.on('users', (data: Pick<UserSliceStateType, 'allUsersArray'>) => {
-      dispatch(userSliceActions.updateAllUsersData(data));
-    });
-
     return () => {
       socket.off('room event');
-      socket.off('users');
     };
   }, [dispatch]);
+
+  useEffect(() => {
+    setOnlineUsers(allUsersArray.filter((user) => user.connected === true));
+  }, [allUsersArray]);
 
   return (
     <section className="flex flex-col gap-10">
       <div className="grid grid-cols-1 md:grid-cols-2 grid-flow-row gap-10 place-items-center ">
         <div className="flex flex-col items-center w-full gap-10">
-          <Subheader>Players online:</Subheader>
+          <Subheader props={{ className: 'flex gap-4' }}>
+            Players online:{' '}
+            <span className=" font-light text-cyan-400">
+              {onlineUsers.length} / {allUsersArray.length}
+            </span>
+          </Subheader>
           <CreateRoomForm />
         </div>
         <LobbyTable columns={columns} data={lobbies} />

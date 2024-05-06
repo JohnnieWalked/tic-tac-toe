@@ -10,7 +10,10 @@ type SubheaderProps = {
 
 export default function Subheader({ props, children }: SubheaderProps) {
   return (
-    <h2 {...props} className="text-xl text-center font-bold">
+    <h2
+      {...props}
+      className={`text-xl text-center font-bold ${props?.className}`}
+    >
       {children}
     </h2>
   );
