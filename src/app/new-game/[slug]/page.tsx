@@ -1,7 +1,7 @@
 'use client';
 
 import { useToast } from '@/components/ui/use-toast';
-import { useRef } from 'react';
+import { useEffect } from 'react';
 import { socket } from '@/socket';
 
 /* rtk */
@@ -17,7 +17,6 @@ import { useRouter } from 'next/navigation';
 
 export default function GameRoom() {
   const router = useRouter();
-  const { username, isInGame } = useAppSelector((state) => state.userSlice);
   const { toast } = useToast();
   const dispatch = useAppDispatch();
   const { roomname } = useAppSelector((state) => state.roomSlice);
@@ -41,7 +40,7 @@ export default function GameRoom() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 grid-flow-row gap-10 place-items-center ">
+    <div className="grid grid-cols-1 md:grid-cols-2 grid-flow-row gap-10 place-items-center">
       <div className="w-max overflow-hidden">
         <GameField animateGameplay={false} disableClickSquare={false} />
       </div>

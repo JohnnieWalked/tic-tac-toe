@@ -14,7 +14,7 @@ import type { Room } from '@/components/lobby-table/columns';
 
 /* rtk */
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { UserInfo, userSliceActions } from '@/store/slices/userSlice';
+import { UserInfo } from '@/store/slices/userSlice';
 
 export default function NewGamePage() {
   const dispatch = useAppDispatch();
@@ -24,12 +24,12 @@ export default function NewGamePage() {
 
   function updateOrCreateRoom(data: Room) {
     setLobbies((state) => {
-      const findRoomIndexWithSameId = state.findIndex(
-        (item) => item.id === data.id
+      const findRoomIndexWithSameName = state.findIndex(
+        (item) => item.room === data.room
       );
-      if (findRoomIndexWithSameId !== -1) {
+      if (findRoomIndexWithSameName !== -1) {
         const newState = [...state];
-        newState[findRoomIndexWithSameId] = data;
+        newState[findRoomIndexWithSameName] = data;
         return newState;
       }
       return [data, ...state];
@@ -38,13 +38,13 @@ export default function NewGamePage() {
 
   /* add new created room to state or update if room with same id already exists  */
   useEffect(() => {
-    socket.on('room event', (data: Room) => {
+    socket.on('room update', (data: Room) => {
       console.log('New room was created:', data);
       updateOrCreateRoom(data);
     });
 
     return () => {
-      socket.off('room event');
+      socket.off('room update');
     };
   }, [dispatch]);
 

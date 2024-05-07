@@ -5,6 +5,17 @@ export default function GuidePage() {
     <section className=" flex flex-col justify-center gap-5">
       <h1 className=" text-center text-4xl">Guide</h1>
 
+      <h2 className=" font-bold text-xl">Connection:</h2>
+      <ol
+        style={{ listStyleType: 'decimal' }}
+        className="-mt-3 flex flex-col gap-1 text-lg"
+      >
+        <li>
+          By submitting username form You will be assigned to game server.
+          Please, make sure You have status `connected`.
+        </li>
+      </ol>
+
       <h2 className=" font-bold text-xl">Gameplay:</h2>
       <ol
         style={{ listStyleType: 'decimal' }}

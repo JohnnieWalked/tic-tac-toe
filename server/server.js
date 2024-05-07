@@ -72,10 +72,6 @@ app.prepare().then(() => {
       username: socket.username,
     });
 
-    socket.on('disconnecting', () => {
-      console.log(socket.rooms);
-    });
-
     /* join the "userID" room */
     socket.join(socket.userID);
 
@@ -110,13 +106,13 @@ app.prepare().then(() => {
       socket.join(roomname);
 
       const roomData = {
-        id: socket.id,
+        id: socket.userID + roomname,
         room: roomname,
         amount: (await io.in(roomname).fetchSockets()).length,
       };
 
       /* send info about room to all connected sockets (except room host) */
-      socket.broadcast.emit('room event', roomData);
+      socket.broadcast.emit('room update', roomData);
 
       callback({ success: true });
     });
@@ -145,13 +141,12 @@ app.prepare().then(() => {
 
       /* prepare updated info about room  */
       const updatedDataForRoom = {
-        id: room.values().next().value /* get host id (will be always first) */,
         room: roomname,
         amount: 2,
       };
 
       /* send to all connected clients updated info about room */
-      io.emit('room event', updatedDataForRoom);
+      io.emit('room update', updatedDataForRoom);
 
       return callback({
         success: true,
@@ -159,20 +154,66 @@ app.prepare().then(() => {
       });
     });
 
-    /* chat */
-    socket.on('chat message', ({ message, roomname }) => {
+    /* send chat message */
+    socket.on('chat message', ({ message, roomname, introduction = false }) => {
       const data = {
         username: socket.username,
+        userID: socket.userID,
         message,
       };
+      if (introduction) {
+        data.introduction = true;
+      }
 
       io.to(roomname).emit('chat message', data);
     });
 
+    /* listen for users in room */
+    socket.on('room users', async ({ roomname }) => {
+      const socketsInRoom = await io.in(roomname).fetchSockets();
+      const participators = [];
+      socketsInRoom.forEach((socket) => {
+        participators.push({
+          username: socket.username,
+          userID: socket.userID,
+        });
+      });
+      io.to(roomname).emit('room users', participators);
+    });
+
     /* leave room */
-    socket.on('leave room', ({ roomname }, callback) => {
+    socket.on('leave room', async ({ roomname }, callback) => {
+      /* prepare data about user that will leave */
+      const data = {
+        username: socket.username,
+        userID: socket.userID,
+        abandon: true,
+      };
+      /* send msg about leaving room */
+      io.to(roomname).emit('chat message', data);
       socket.leave(roomname);
-      console.log(socket.rooms);
+
+      /* get up-to-date users data in room */
+      const socketsInRoom = await io.in(roomname).fetchSockets();
+      const participators = [];
+      socketsInRoom.forEach((socket) => {
+        participators.push({
+          username: socket.username,
+          userID: socket.userID,
+        });
+      });
+      /* send new data about participators in the room */
+      io.to(roomname).emit('room users', participators);
+
+      /* update data about room */
+      const updatedDataForRoom = {
+        room: roomname,
+        amount: socketsInRoom.length,
+      };
+
+      /* send updated data about room */
+      io.emit('room update', updatedDataForRoom);
+
       callback({ status: 200 });
     });
 

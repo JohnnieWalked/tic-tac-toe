@@ -21,7 +21,15 @@ export default function CreateRoomForm() {
   const { toast } = useToast();
 
   function handleSubmit(formData: FormData) {
-    if (!socket.connected) return;
+    if (!socket.connected) {
+      toast({
+        title: 'Connection error!',
+        description:
+          'Can not establish connection with server. Try to reconnect.',
+        variant: 'destructive',
+      });
+      return;
+    }
     const result = CreateGameSchema.safeParse({
       roomname: formData.get('roomname'),
       // password: formData.get('password'),
