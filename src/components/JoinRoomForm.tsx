@@ -3,7 +3,6 @@ import { useToast } from './ui/use-toast';
 import { joinRoom } from '@/helpers/joinRoom';
 import { useAppDispatch } from '@/hooks/hooks';
 import { roomSliceActions } from '@/store/slices/roomSlice';
-import { userSliceActions } from '@/store/slices/userSlice';
 import { useRouter } from 'next/navigation';
 
 type JoinRoomProps = {
@@ -27,12 +26,11 @@ export default function JoinRoomForm({
     const result = await joinRoom(roomname);
     if (result.success) {
       dispatch(roomSliceActions.setRoomName(roomname.toString()));
-      dispatch(userSliceActions.updateIsInGameStatus('in game'));
       toast({
         title: 'Success!',
         description: result.description,
       });
-      return router.push(`/new-game/${roomname}`);
+      return router.push(`/new-game/game-room?roomname=${roomname}`);
     }
 
     toast({

@@ -29,8 +29,14 @@ export default function NewGamePage() {
       );
       if (findRoomIndexWithSameName !== -1) {
         const newState = [...state];
+        if (data.amount === 0) {
+          return newState.filter((item) => item.room !== data.room);
+        }
         newState[findRoomIndexWithSameName] = data;
         return newState;
+      }
+      if (data.amount === 0) {
+        return [...state];
       }
       return [data, ...state];
     });

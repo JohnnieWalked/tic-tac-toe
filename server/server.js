@@ -22,7 +22,9 @@ const crypto = require('crypto');
 const randomId = () => crypto.randomBytes(8).toString('hex');
 
 const { InMemorySessionStore } = require('./sessionStore');
+const { InMemoryRoomStore } = require('./roomStore');
 const sessionStore = new InMemorySessionStore();
+const roomStore = new InMemoryRoomStore();
 
 app.prepare().then(() => {
   const expressApp = express();
@@ -244,7 +246,6 @@ app.prepare().then(() => {
         errors: result.error.flatten().fieldErrors,
       });
     } else {
-      res.cookie('username', result.data.username);
       res.status(200).json(result.data.username).end();
     }
   });

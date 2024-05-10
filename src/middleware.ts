@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
-  const { nextUrl } = request;
-  if (request.cookies.get('username')?.value) {
-    return;
-  } else {
-    return Response.redirect(new URL('/?error=no-username-provided', nextUrl));
-  }
+export function middleware(request: NextRequest, response: NextResponse) {
+  // console.log(request);
+  // console.log(response);
 }
 
 export const config = {

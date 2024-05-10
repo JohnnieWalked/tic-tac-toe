@@ -7,7 +7,6 @@ import { CreateGameSchema } from '@/schemas';
 
 /* rtk */
 import { useAppDispatch } from '@/hooks/hooks';
-import { userSliceActions } from '@/store/slices/userSlice';
 import { roomSliceActions } from '@/store/slices/roomSlice';
 
 /* components */
@@ -57,9 +56,8 @@ export default function CreateRoomForm() {
               title: 'Success!',
               description: 'Lobby has been created.',
             });
-            dispatch(userSliceActions.updateIsInGameStatus('in game'));
             dispatch(roomSliceActions.setRoomName(result.data.roomname));
-            router.push(`/new-game/${result.data.roomname}`);
+            router.push(`/new-game/game-room?roomname=${result.data.roomname}`);
             // dispatch(roomSliceActions.setPassword(result.data.password));
           } else {
             toast({

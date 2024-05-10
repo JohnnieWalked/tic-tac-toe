@@ -4,12 +4,8 @@ import { DetailedHTMLProps, HTMLAttributes, useEffect, useState } from 'react';
 import { socket } from '@/socket';
 import { useToast } from './ui/use-toast';
 
-/* interfaces */
-import { Socket } from 'socket.io-client';
-
 /* rtk */
 import { useAppSelector, useAppDispatch } from '@/hooks/hooks';
-import { fetchUsername } from '@/store/thunks/fetchUsername';
 import { UserInfo, userSliceActions } from '@/store/slices/userSlice';
 
 function StatusBar(
@@ -63,10 +59,7 @@ function StatusBar(
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
-    socket.on('users', (data: UserInfo[]) => {
-      console.log(data);
-      updateAllUsersData(data);
-    });
+    socket.on('users', (data: UserInfo[]) => updateAllUsersData(data));
     socket.on('user connected', (data: UserInfo) => updateAllUsersData([data]));
     socket.on('user disconnected', (userID: string) =>
       dispatch(userSliceActions.userDisconnected(userID))

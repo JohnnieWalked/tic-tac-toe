@@ -13,7 +13,6 @@ export type UserInfo = {
 export type UserSliceStateType = {
   username: string;
   allUsersArray: UserInfo[];
-  isInGame: 'in game' | 'not in game';
   isLoading: boolean;
   error: null | SerializedError;
 };
@@ -21,7 +20,6 @@ export type UserSliceStateType = {
 const initialState: UserSliceStateType = {
   username: '',
   allUsersArray: [],
-  isInGame: 'not in game',
   isLoading: false,
   error: null,
 };
@@ -57,12 +55,6 @@ export const userSlice = createSlice({
           draft.allUsersArray.push(user);
         });
       });
-    },
-    updateIsInGameStatus(
-      state,
-      action: PayloadAction<'in game' | 'not in game'>
-    ) {
-      state.isInGame = action.payload;
     },
   },
   extraReducers(builder) {
