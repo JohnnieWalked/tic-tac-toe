@@ -1,7 +1,7 @@
 /* helpers */
 const { randomId } = require('./helpers/index');
 
-const sessionMiddleware = (socket, next) => {
+const sessionMiddleware = (socket, sessionStore, next) => {
   const sessionID = socket.handshake.auth.sessionID;
   if (sessionID) {
     // find existing session
@@ -16,7 +16,7 @@ const sessionMiddleware = (socket, next) => {
 
   const username = socket.handshake.auth.username;
   if (!username) {
-    return next(new Error('invalid username'));
+    return next(new Error('Missing or invalid username.'));
   }
 
   // create new session

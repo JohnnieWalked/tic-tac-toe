@@ -1,7 +1,8 @@
 /* abstract */ class RoomStore {
-  findRoom(roomName) {}
-  saveRoom(roomName, roomData) {}
-  deleteRoom(roomName) {}
+  findRoom(roomname) {}
+  findAllRooms() {}
+  saveRoom(roomname, roomData) {}
+  deleteRoom(roomname) {}
 }
 
 class InMemoryRoomStore extends RoomStore {
@@ -10,16 +11,20 @@ class InMemoryRoomStore extends RoomStore {
     this.rooms = new Map();
   }
 
-  findRoom(roomName) {
-    return this.rooms.get(roomName);
+  findRoom(roomname) {
+    return this.rooms.get(roomname);
   }
 
-  saveRoom(roomName, roomData) {
-    this.rooms.set(roomName, roomData);
+  findAllRooms() {
+    return [...this.rooms.values()];
   }
 
-  deleteRoom(roomName) {
-    this.rooms.delete(roomName);
+  saveRoom(roomname, roomData) {
+    this.rooms.set(roomname, roomData);
+  }
+
+  deleteRoom(roomname) {
+    this.rooms.delete(roomname);
   }
 }
 

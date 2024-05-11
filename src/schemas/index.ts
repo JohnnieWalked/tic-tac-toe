@@ -9,5 +9,5 @@ export const CreateGameSchema = z.object({
     .regex(/^[a-zA-Z0-9\s]+$/gm, {
       message: 'Allowed only lowercase, uppercase letters, numbers and spaces.',
     }),
-  // password: z.string().trim(),
+  password: z.string().trim(),
 });

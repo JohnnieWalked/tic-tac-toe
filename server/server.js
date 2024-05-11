@@ -1,14 +1,13 @@
-/* constants */
-const { _HOSTNAME, _PORT, _DEV } = require('./constants/index');
-
-/* core */
 const express = require('express');
 const next = require('next');
 const { Server } = require('socket.io');
 
-/* middlewares */
+/* middlewares and utils */
 const bodyParser = require('body-parser');
 const { sessionMiddleware } = require('./middleware');
+
+/* helpers */
+const { hashPassword } = require('./helpers/index');
 
 /* store */
 const { InMemorySessionStore } = require('./store/sessionStore');
@@ -17,7 +16,10 @@ const { InMemoryRoomStore } = require('./store/roomStore');
 /* schemas */
 const { FormSchema } = require('./schemas/index');
 
-const app = next({ _DEV, _HOSTNAME, _PORT });
+const hostname = 'localhost';
+const port = 3000;
+const dev = process.env.NODE_ENV !== 'production';
+const app = next({ dev, hostname, port });
 const handler = app.getRequestHandler();
 
 const sessionStore = new InMemorySessionStore();
@@ -25,6 +27,7 @@ const roomStore = new InMemoryRoomStore();
 const socketEvents = {
   SESSION: 'session',
   USERS: 'users',
+  ROOMS: 'rooms',
   USER_CONNECTED: 'user connected',
   CREATE_GAME: 'create game',
 };
@@ -34,11 +37,11 @@ app.prepare().then(() => {
   expressApp.use(bodyParser.urlencoded({ extended: false }));
   expressApp.use(bodyParser.json());
 
-  const expressServer = expressApp.listen(_PORT);
+  const expressServer = expressApp.listen(port);
   const io = new Server(expressServer);
 
   io.use((socket, next) => {
-    sessionMiddleware(socket, next);
+    sessionMiddleware(socket, sessionStore, next);
   });
 
   io.on('connection', (socket) => {
@@ -70,6 +73,18 @@ app.prepare().then(() => {
     });
     socket.emit(socketEvents.USERS, users);
 
+    /* fetch existing rooms */
+    const rooms = [];
+    roomStore.findAllRooms().forEach((room) => {
+      rooms.push({
+        id: room.roomname,
+        roomname: room.roomname,
+        isPrivate: !!room.password,
+        amount: room.participators.length,
+      });
+    });
+    socket.emit(socketEvents.ROOMS, rooms);
+
     // notify existing users
     socket.broadcast.emit(socketEvents.USER_CONNECTED, {
       userID: socket.userID,
@@ -78,45 +93,50 @@ app.prepare().then(() => {
     });
 
     /* game room creation */
-    socket.on(socketEvents.CREATE_GAME, async ({ roomName }, callback) => {
-      /* check if room with this name already exists */
-      if (roomStore.findRoom(roomName)) {
-        return callback({
-          success: false,
-          description: 'Room with this name already exists!',
-        });
-      }
+    socket.on(
+      socketEvents.CREATE_GAME,
+      async ({ roomname, password }, callback) => {
+        /* check if room with this name already exists */
+        if (roomStore.findRoom(roomname)) {
+          return callback({
+            success: false,
+            description: 'Room with this name already exists!',
+          });
+        }
 
-      roomStore.saveRoom(roomName, {
-        password: '',
-        gameState: [
-          [
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0],
+        roomStore.saveRoom(roomname, {
+          roomname: roomname,
+          password: password ? await hashPassword(password) : '',
+          gameState: [
+            [
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ],
           ],
-        ],
-        participators: [
-          {
-            userID: socket.userID,
-            username: socket.username,
-          },
-        ],
-      });
+          participators: [
+            {
+              userID: socket.userID,
+              username: socket.username,
+            },
+          ],
+        });
 
-      socket.join(roomName);
+        socket.join(roomname);
 
-      const roomData = {
-        id: socket.userID + roomName,
-        room: roomName,
-        amount: (await io.in(roomName).fetchSockets()).length,
-      };
+        const roomData = {
+          id: socket.userID + roomname,
+          roomname: roomname,
+          isPrivate: !!password,
+          amount: 1,
+        };
 
-      /* send info about room to all connected sockets (except room host) */
-      socket.broadcast.emit('room update', roomData);
+        /* send info about room to all connected sockets (except room host) */
+        socket.broadcast.emit('room update', roomData);
 
-      callback({ success: true });
-    });
+        callback({ success: true });
+      }
+    );
 
     /* join room */
     socket.on('join room', async ({ roomname }, callback) => {

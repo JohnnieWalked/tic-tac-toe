@@ -57,9 +57,11 @@ export function LobbyTable<TData, TValue>({
           <Label>{'Filter rooms:'}</Label>
           <Input
             placeholder="Filter rooms..."
-            value={(table.getColumn('room')?.getFilterValue() as string) ?? ''}
+            value={
+              (table.getColumn('roomname')?.getFilterValue() as string) ?? ''
+            }
             onChange={(event) =>
-              table.getColumn('room')?.setFilterValue(event.target.value)
+              table.getColumn('roomname')?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />

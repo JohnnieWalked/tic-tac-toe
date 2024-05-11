@@ -25,12 +25,12 @@ export default function NewGamePage() {
   function updateOrCreateRoom(data: Room) {
     setLobbies((state) => {
       const findRoomIndexWithSameName = state.findIndex(
-        (item) => item.room === data.room
+        (item) => item.roomname === data.roomname
       );
       if (findRoomIndexWithSameName !== -1) {
         const newState = [...state];
         if (data.amount === 0) {
-          return newState.filter((item) => item.room !== data.room);
+          return newState.filter((item) => item.roomname !== data.roomname);
         }
         newState[findRoomIndexWithSameName] = data;
         return newState;
@@ -44,13 +44,16 @@ export default function NewGamePage() {
 
   /* add new created room to state or update if room with same id already exists  */
   useEffect(() => {
+    socket.on('rooms', (data: Room[]) => {
+      setLobbies(data);
+    });
     socket.on('room update', (data: Room) => {
-      console.log('New room was created:', data);
       updateOrCreateRoom(data);
     });
 
     return () => {
       socket.off('room update');
+      socket.off('rooms');
     };
   }, [dispatch]);
 
