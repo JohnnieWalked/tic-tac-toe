@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { socket } from '@/socket';
 
 /* rtk */
@@ -10,13 +9,13 @@ import { roomSliceActions } from '@/store/slices/roomSlice';
 /* components */
 import PrimaryButton from '../common/PrimaryButton';
 import { useEffect } from 'react';
+import Link from 'next/link';
 
 type LeaveRoomButtonProps = {
   roomname: string;
 };
 
 export default function LeaveRoomButton({ roomname }: LeaveRoomButtonProps) {
-  const router = useRouter();
   const dispatch = useAppDispatch();
 
   /* leave room after leaving page */
@@ -28,7 +27,6 @@ export default function LeaveRoomButton({ roomname }: LeaveRoomButtonProps) {
         (response: { status: number }) => {
           if (response.status === 200) {
             dispatch(roomSliceActions.setRoomName(''));
-            router.push('/new-game/');
           }
         }
       );
@@ -38,11 +36,11 @@ export default function LeaveRoomButton({ roomname }: LeaveRoomButtonProps) {
 
   return (
     <PrimaryButton
-      onClick={() => router.push('/new-game/')}
+      asChild
       variant="destructive"
       className=" mt-10 md:col-span-2"
     >
-      Leave game
+      <Link href={'/new-game/'}>Leave game</Link>
     </PrimaryButton>
   );
 }

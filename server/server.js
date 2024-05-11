@@ -1,62 +1,44 @@
+/* constants */
+const { _HOSTNAME, _PORT, _DEV } = require('./constants/index');
+
+/* core */
 const express = require('express');
 const next = require('next');
 const { Server } = require('socket.io');
+
+/* middlewares */
 const bodyParser = require('body-parser');
-const z = require('zod');
+const { sessionMiddleware } = require('./middleware');
 
-const FormSchema = z.object({
-  username: z
-    .string()
-    .min(1, { message: 'Must be 1 or more characters long.' })
-    .max(20, { message: 'Must be 20 or fewer characters long.' }),
-});
+/* store */
+const { InMemorySessionStore } = require('./store/sessionStore');
+const { InMemoryRoomStore } = require('./store/roomStore');
 
-const hostname = 'localhost';
-const port = 3000;
-const dev = process.env.NODE_ENV !== 'production';
+/* schemas */
+const { FormSchema } = require('./schemas/index');
 
-const app = next({ dev, hostname, port });
+const app = next({ _DEV, _HOSTNAME, _PORT });
 const handler = app.getRequestHandler();
 
-const crypto = require('crypto');
-const randomId = () => crypto.randomBytes(8).toString('hex');
-
-const { InMemorySessionStore } = require('./sessionStore');
-const { InMemoryRoomStore } = require('./roomStore');
 const sessionStore = new InMemorySessionStore();
 const roomStore = new InMemoryRoomStore();
+const socketEvents = {
+  SESSION: 'session',
+  USERS: 'users',
+  USER_CONNECTED: 'user connected',
+  CREATE_GAME: 'create game',
+};
 
 app.prepare().then(() => {
   const expressApp = express();
   expressApp.use(bodyParser.urlencoded({ extended: false }));
   expressApp.use(bodyParser.json());
 
-  const expressServer = expressApp.listen(port);
+  const expressServer = expressApp.listen(_PORT);
   const io = new Server(expressServer);
 
   io.use((socket, next) => {
-    const sessionID = socket.handshake.auth.sessionID;
-    if (sessionID) {
-      // find existing session
-      const session = sessionStore.findSession(sessionID);
-      if (session) {
-        socket.sessionID = sessionID;
-        socket.userID = session.userID;
-        socket.username = session.username;
-        return next();
-      }
-    }
-
-    const username = socket.handshake.auth.username;
-    if (!username) {
-      return next(new Error('invalid username'));
-    }
-
-    // create new session
-    socket.sessionID = randomId();
-    socket.userID = randomId();
-    socket.username = username;
-    next();
+    sessionMiddleware(socket, next);
   });
 
   io.on('connection', (socket) => {
@@ -68,13 +50,13 @@ app.prepare().then(() => {
     });
 
     /* emit session details */
-    socket.emit('session', {
+    socket.emit(socketEvents.SESSION, {
       sessionID: socket.sessionID,
       userID: socket.userID,
       username: socket.username,
     });
 
-    /* join the "userID" room */
+    /* join the "userID" (userID is public ID) room */
     socket.join(socket.userID);
 
     // fetch existing users
@@ -86,31 +68,48 @@ app.prepare().then(() => {
         connected: session.connected,
       });
     });
-    socket.emit('users', users);
+    socket.emit(socketEvents.USERS, users);
 
     // notify existing users
-    socket.broadcast.emit('user connected', {
+    socket.broadcast.emit(socketEvents.USER_CONNECTED, {
       userID: socket.userID,
       username: socket.username,
       connected: true,
     });
 
-    /* room creation */
-    socket.on('create game', async ({ roomname }, callback) => {
+    /* game room creation */
+    socket.on(socketEvents.CREATE_GAME, async ({ roomName }, callback) => {
       /* check if room with this name already exists */
-      if (io.sockets.adapter.rooms.get(roomname)) {
+      if (roomStore.findRoom(roomName)) {
         return callback({
           success: false,
           description: 'Room with this name already exists!',
         });
       }
 
-      socket.join(roomname);
+      roomStore.saveRoom(roomName, {
+        password: '',
+        gameState: [
+          [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+          ],
+        ],
+        participators: [
+          {
+            userID: socket.userID,
+            username: socket.username,
+          },
+        ],
+      });
+
+      socket.join(roomName);
 
       const roomData = {
-        id: socket.userID + roomname,
-        room: roomname,
-        amount: (await io.in(roomname).fetchSockets()).length,
+        id: socket.userID + roomName,
+        room: roomName,
+        amount: (await io.in(roomName).fetchSockets()).length,
       };
 
       /* send info about room to all connected sockets (except room host) */

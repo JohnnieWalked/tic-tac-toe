@@ -7,6 +7,7 @@ import { useToast } from './ui/use-toast';
 /* rtk */
 import { useAppSelector, useAppDispatch } from '@/hooks/hooks';
 import { UserInfo, userSliceActions } from '@/store/slices/userSlice';
+import { roomSliceActions } from '@/store/slices/roomSlice';
 
 function StatusBar(
   props: DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
@@ -25,7 +26,7 @@ function StatusBar(
       socket.connect();
     }
 
-    socket.on('session', ({ sessionID, userID, username }) => {
+    socket.on('session', ({ sessionID, userID, username, currentGameRoom }) => {
       // attach the session ID to the next reconnection attempts
       socket.auth = { sessionID };
       // store it in the localStorage
@@ -35,6 +36,9 @@ function StatusBar(
       // save the username of the user
       socket.username = username;
       dispatch(userSliceActions.setUsername(socket.username));
+      /* save game room user is currently in */
+      socket.currentGameRoom = currentGameRoom;
+      dispatch(roomSliceActions.setRoomName(socket.currentGameRoom.roomname));
     });
   }, [dispatch]);
 
