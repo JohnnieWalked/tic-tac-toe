@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const { sessionMiddleware } = require('./middleware');
 
 /* helpers */
-const { hashPassword } = require('./helpers/index');
+const { hashPassword, getInfoAboutUsersInRoom } = require('./helpers/index');
 
 /* store */
 const { InMemorySessionStore } = require('./store/sessionStore');
@@ -74,16 +74,18 @@ app.prepare().then(() => {
     socket.emit(socketEvents.USERS, users);
 
     /* fetch existing rooms */
-    const rooms = [];
-    roomStore.findAllRooms().forEach((room) => {
-      rooms.push({
-        id: room.roomname,
-        roomname: room.roomname,
-        isPrivate: !!room.password,
-        amount: room.participators.length,
+    socket.on(socketEvents.ROOMS, (callback) => {
+      const rooms = [];
+      roomStore.findAllRooms().forEach((room) => {
+        rooms.push({
+          id: room.roomname,
+          roomname: room.roomname,
+          isPrivate: !!room.password,
+          amount: room.participators.length,
+        });
       });
+      callback(rooms);
     });
-    socket.emit(socketEvents.ROOMS, rooms);
 
     // notify existing users
     socket.broadcast.emit(socketEvents.USER_CONNECTED, {
@@ -104,6 +106,9 @@ app.prepare().then(() => {
           });
         }
 
+        socket.join(roomname);
+
+        const participators = await getInfoAboutUsersInRoom(io, roomname);
         roomStore.saveRoom(roomname, {
           roomname: roomname,
           password: password ? await hashPassword(password) : '',
@@ -114,21 +119,14 @@ app.prepare().then(() => {
               [0, 0, 0],
             ],
           ],
-          participators: [
-            {
-              userID: socket.userID,
-              username: socket.username,
-            },
-          ],
+          participators: participators,
         });
-
-        socket.join(roomname);
 
         const roomData = {
           id: socket.userID + roomname,
           roomname: roomname,
           isPrivate: !!password,
-          amount: 1,
+          amount: participators.length,
         };
 
         /* send info about room to all connected sockets (except room host) */
@@ -191,14 +189,7 @@ app.prepare().then(() => {
 
     /* listen for users in room */
     socket.on('room users', async ({ roomname }) => {
-      const socketsInRoom = await io.in(roomname).fetchSockets();
-      const participators = [];
-      socketsInRoom.forEach((socket) => {
-        participators.push({
-          username: socket.username,
-          userID: socket.userID,
-        });
-      });
+      const participators = await getInfoAboutUsersInRoom(io, roomname);
       io.to(roomname).emit('room users', participators);
     });
 
@@ -215,24 +206,23 @@ app.prepare().then(() => {
       socket.leave(roomname);
 
       /* get up-to-date users data in room */
-      const socketsInRoom = await io.in(roomname).fetchSockets();
-      const participators = [];
-      socketsInRoom.forEach((socket) => {
-        participators.push({
-          username: socket.username,
-          userID: socket.userID,
-        });
-      });
-      /* send new data about participators in the room */
-      io.to(roomname).emit('room users', participators);
+      const participators = await getInfoAboutUsersInRoom(io, roomname);
+      console.log(participators);
 
-      /* update data about room */
+      /* delete room if there are no users left there */
+      if (participators.length === 0) {
+        roomStore.deleteRoom(roomname);
+      } else {
+        roomStore.updateRoom(roomname, { participators: participators });
+        /* send new data about participators in the room */
+        io.to(roomname).emit('room users', participators);
+      }
+
+      /* update data about room and send updated data about room to all clients */
       const updatedDataForRoom = {
-        room: roomname,
-        amount: socketsInRoom.length,
+        roomname: roomname,
+        amount: participators.length,
       };
-
-      /* send updated data about room */
       io.emit('room update', updatedDataForRoom);
 
       callback({ status: 200 });

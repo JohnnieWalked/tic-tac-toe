@@ -24,7 +24,8 @@ export default function Chat() {
   const { username, allUsersArray } = useAppSelector(
     (state) => state.userSlice
   );
-  const [guest, setGuest] = useState<{ username: string; userID: string }>();
+  const [participators, setParticipators] =
+    useState<{ username: string; userID: string }[]>();
   const { roomname } = useAppSelector((state) => state.roomSlice);
   const [history, setHistory] = useState<ChatMessage[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
@@ -56,18 +57,17 @@ export default function Chat() {
     }
 
     /* set info about opponent */
-    function updateGuest(data: { username: string; userID: string }[]) {
-      const secondUser = data.find((user) => user.userID !== socket.userID);
-      setGuest(secondUser);
+    function roomParticipators(data: { username: string; userID: string }[]) {
+      setParticipators(data);
     }
 
     socket.on('chat message', updateChat);
     socket.emit('room users', { roomname });
-    socket.on('room users', updateGuest);
+    socket.on('room users', roomParticipators);
 
     return () => {
       socket.off('chat message', updateChat);
-      socket.off('room users', updateGuest);
+      socket.off('room users', roomParticipators);
     };
   }, [roomname]);
 
@@ -81,6 +81,27 @@ export default function Chat() {
     socket.emit('chat message', { message: data, roomname });
   }
 
+  const renderedChatMembers = participators
+    ?.sort((a, b) => {
+      /* reason for sorting -> display socket.username (yourself) on the right side. */
+      if (a.userID === socket.userID) {
+        return 1;
+      }
+      return -1;
+    })
+    .map((participator) => {
+      return (
+        <ChatMemberStatus
+          key={participator.userID}
+          username={participator.username || 'Waiting for player...'}
+          status={
+            allUsersArray.find((user) => user.userID === participator.userID)
+              ?.connected
+          }
+        />
+      );
+    });
+
   const renderedMessages = history.map((item, index) => {
     return (
       <ChatMessage
@@ -92,12 +113,14 @@ export default function Chat() {
           avoid passing username if:
           1) message before was from the same user
           2) message is not the first in chat
-          3) previous message was not the notification message (user joined / user left)
+          3) previous message was not the notification message (user joined / user left) -> introduction and abandon
           4) message is not 'user left'
+          5) message is not 'user has joined'
         */
         chatMemberUsername={
           index !== 0 &&
           item.username === history[index - 1].username &&
+          !item.introduction &&
           !history[index - 1].introduction &&
           !item.abandon &&
           !history[index - 1].abandon
@@ -111,19 +134,8 @@ export default function Chat() {
 
   return (
     <section className="flex flex-col w-full gap-3">
-      <h3 className=" text-center text-xl">Chat</h3>
       <div className=" flex justify-between items-center">
-        <ChatMemberStatus
-          username={guest?.username || 'Waiting for opponent...'}
-          status={
-            allUsersArray.find((user) => user.userID === guest?.userID)
-              ?.connected
-          }
-        />
-        <ChatMemberStatus
-          username={socket.username}
-          status={socket.connected}
-        />
+        {renderedChatMembers}
       </div>
       <div className="flex w-full flex-col h-96 overflow-y-auto border rounded-xl">
         {renderedMessages}
