@@ -1,16 +1,26 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { socket } from '@/socket';
+import { useState, useRef, useEffect, startTransition } from 'react';
+import { socket, socketEvents } from '@/socket';
+import { useToast } from '../ui/use-toast';
 
 /* rtk */
-import { useAppSelector } from '@/hooks/hooks';
+import { useAppSelector, useAppDispatch } from '@/hooks/hooks';
+import { roomSliceActions } from '@/store/slices/roomSlice';
+
+/* helpers */
+import { joinRoom } from '@/helpers/joinRoom';
 
 /* components */
 import { Input } from '../ui/input';
 import PrimaryButton from '../common/PrimaryButton';
 import ChatMessage from './ChatMessage';
 import ChatMemberStatus from './ChatMemberStatus';
+
+type ChatProps = {
+  roomnameURLQuery: string;
+  passwordURLQuery: string;
+};
 
 type ChatMessage = {
   username: string;
@@ -20,13 +30,18 @@ type ChatMessage = {
   abandon?: boolean;
 };
 
-export default function Chat() {
+export default function Chat({
+  roomnameURLQuery,
+  passwordURLQuery,
+}: ChatProps) {
+  const dispatch = useAppDispatch();
   const { username, allUsersArray } = useAppSelector(
     (state) => state.userSlice
   );
+  const { roomname } = useAppSelector((state) => state.roomSlice);
+  const { toast } = useToast();
   const [participators, setParticipators] =
     useState<{ username: string; userID: string }[]>();
-  const { roomname } = useAppSelector((state) => state.roomSlice);
   const [history, setHistory] = useState<ChatMessage[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -36,9 +51,25 @@ export default function Chat() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [history]);
 
+  /* reconnect if user refreshed the page  */
+  useEffect(() => {
+    if (!roomname) {
+      startTransition(async () => {
+        const result = await joinRoom(roomnameURLQuery);
+        if (result.success) {
+          dispatch(roomSliceActions.setRoomName(roomnameURLQuery));
+          toast({
+            title: 'Success!',
+            description: result.description,
+          });
+        }
+      });
+    }
+  }, [dispatch, roomname, roomnameURLQuery, toast]);
+
   /* notify about joining user */
   useEffect(() => {
-    socket.emit('chat message', {
+    socket.emit(socketEvents.CHAT_MESSAGE, {
       roomname,
       introduction: true,
     });
@@ -61,13 +92,13 @@ export default function Chat() {
       setParticipators(data);
     }
 
-    socket.on('chat message', updateChat);
-    socket.emit('room users', { roomname });
-    socket.on('room users', roomParticipators);
+    socket.on(socketEvents.CHAT_MESSAGE, updateChat);
+    socket.emit('users in room', { roomname });
+    socket.on('users in room', roomParticipators);
 
     return () => {
-      socket.off('chat message', updateChat);
-      socket.off('room users', roomParticipators);
+      socket.off(socketEvents.CHAT_MESSAGE, updateChat);
+      socket.off('users in room', roomParticipators);
     };
   }, [roomname]);
 
@@ -77,8 +108,8 @@ export default function Chat() {
     /* avoid sending empty msg */
     if (!data.toString().trim()) return;
 
-    /* send msg to another user in the room; after response -> update chat history; */
-    socket.emit('chat message', { message: data, roomname });
+    /* send msg to the room; after response -> update chat history; */
+    socket.emit(socketEvents.CHAT_MESSAGE, { message: data, roomname });
   }
 
   const renderedChatMembers = participators
@@ -93,7 +124,7 @@ export default function Chat() {
       return (
         <ChatMemberStatus
           key={participator.userID}
-          username={participator.username || 'Waiting for player...'}
+          username={participator.username}
           status={
             allUsersArray.find((user) => user.userID === participator.userID)
               ?.connected
@@ -113,7 +144,7 @@ export default function Chat() {
           avoid passing username if:
           1) message before was from the same user
           2) message is not the first in chat
-          3) previous message was not the notification message (user joined / user left) -> introduction and abandon
+          3) previous message was not the notification message from same socket (user joined / user left) -> introduction and abandon
           4) message is not 'user left'
           5) message is not 'user has joined'
         */

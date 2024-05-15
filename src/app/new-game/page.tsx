@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { socket } from '@/socket';
+import { socket, socketEvents } from '@/socket';
 
 /* components */
 import { columns } from '@/components/lobby-table/columns';
@@ -27,7 +27,6 @@ export default function NewGamePage() {
       const findRoomIndexWithSameName = state.findIndex(
         (item) => item.roomname === data.roomname
       );
-      console.log(findRoomIndexWithSameName);
       if (findRoomIndexWithSameName !== -1) {
         const newState = [...state];
         if (data.amount === 0) {
@@ -37,7 +36,6 @@ export default function NewGamePage() {
           ...newState[findRoomIndexWithSameName],
           ...data,
         };
-        console.log(newState[findRoomIndexWithSameName]);
         return newState;
       }
       if (data.amount === 0) {
@@ -49,15 +47,15 @@ export default function NewGamePage() {
 
   /* add new created room to state or update if room with same id already exists  */
   useEffect(() => {
-    socket.emit('rooms', (response: Room[]) => {
+    socket.emit(socketEvents.ROOMS, (response: Room[]) => {
       setLobbies(response);
     });
-    socket.on('room update', (data: Room) => {
+    socket.on(socketEvents.ROOM_UPDATE, (data: Room) => {
       updateOrCreateRoom(data);
     });
 
     return () => {
-      socket.off('room update');
+      socket.off(socketEvents.ROOM_UPDATE);
     };
   }, [dispatch]);
 

@@ -28,8 +28,12 @@ const socketEvents = {
   SESSION: 'session',
   USERS: 'users',
   ROOMS: 'rooms',
+  ROOM_UPDATE: 'room update',
   USER_CONNECTED: 'user connected',
+  USER_DISCONNECTED: 'user disconnected',
   CREATE_GAME: 'create game',
+  JOIN_ROOM: 'join room',
+  CHAT_MESSAGE: 'chat message',
 };
 
 app.prepare().then(() => {
@@ -130,16 +134,15 @@ app.prepare().then(() => {
         };
 
         /* send info about room to all connected sockets (except room host) */
-        socket.broadcast.emit('room update', roomData);
+        socket.broadcast.emit(socketEvents.ROOM_UPDATE, roomData);
 
         callback({ success: true });
       }
     );
 
     /* join room */
-    socket.on('join room', async ({ roomname }, callback) => {
-      /* get set of sockets room if exists */
-      const room = io.sockets.adapter.rooms.get(roomname);
+    socket.on(socketEvents.JOIN_ROOM, async ({ roomname }, callback) => {
+      const room = roomStore.findRoom(roomname);
       if (!room) {
         return callback({
           success: false,
@@ -147,25 +150,34 @@ app.prepare().then(() => {
         });
       }
 
-      const amountOfSocketsInRoom = (await io.in(roomname).fetchSockets())
-        .length;
+      /* We need to check for current socket in roomStoreMemory, because user can refresh page and will leave room but WILL NOT leave room in roomStoreMemory */
+      if (room.participators.find((user) => user.userID === socket.userID)) {
+        socket.join(roomname);
+        return callback({
+          success: true,
+          description: 'Reconnected successfully!',
+        });
+      }
 
-      if (amountOfSocketsInRoom === 2) {
+      if (room.participators.length === 2) {
         return callback({
           success: false,
           description: 'Room is full!',
         });
       }
+
       socket.join(roomname);
+      const participators = await getInfoAboutUsersInRoom(io, roomname);
+      roomStore.updateRoom(roomname, { participators: participators });
 
       /* prepare updated info about room  */
       const updatedDataForRoom = {
-        room: roomname,
-        amount: 2,
+        roomname: roomname,
+        amount: participators.length,
       };
 
       /* send to all connected clients updated info about room */
-      io.emit('room update', updatedDataForRoom);
+      io.emit(socketEvents.ROOM_UPDATE, updatedDataForRoom);
 
       return callback({
         success: true,
@@ -174,27 +186,37 @@ app.prepare().then(() => {
     });
 
     /* send chat message */
-    socket.on('chat message', ({ message, roomname, introduction = false }) => {
-      const data = {
-        username: socket.username,
-        userID: socket.userID,
-        message,
-      };
-      if (introduction) {
-        data.introduction = true;
-      }
+    socket.on(
+      socketEvents.CHAT_MESSAGE,
+      ({ message, roomname, introduction = false }) => {
+        const data = {
+          username: socket.username,
+          userID: socket.userID,
+          message,
+        };
+        if (introduction) {
+          data.introduction = true;
+        }
 
-      io.to(roomname).emit('chat message', data);
-    });
+        io.to(roomname).emit(socketEvents.CHAT_MESSAGE, data);
+      }
+    );
 
     /* listen for users in room */
-    socket.on('room users', async ({ roomname }) => {
+    socket.on('users in room', async ({ roomname }) => {
       const participators = await getInfoAboutUsersInRoom(io, roomname);
-      io.to(roomname).emit('room users', participators);
+      io.to(roomname).emit('users in room', participators);
     });
 
     /* leave room */
     socket.on('leave room', async ({ roomname }, callback) => {
+      const room = roomStore.findRoom(roomname);
+      if (!room) {
+        return callback({
+          success: false,
+          description: 'Room does not exist!',
+        });
+      }
       /* prepare data about user that will leave */
       const data = {
         username: socket.username,
@@ -202,12 +224,11 @@ app.prepare().then(() => {
         abandon: true,
       };
       /* send msg about leaving room */
-      io.to(roomname).emit('chat message', data);
+      io.to(roomname).emit(socketEvents.CHAT_MESSAGE, data);
       socket.leave(roomname);
 
       /* get up-to-date users data in room */
       const participators = await getInfoAboutUsersInRoom(io, roomname);
-      console.log(participators);
 
       /* delete room if there are no users left there */
       if (participators.length === 0) {
@@ -215,7 +236,7 @@ app.prepare().then(() => {
       } else {
         roomStore.updateRoom(roomname, { participators: participators });
         /* send new data about participators in the room */
-        io.to(roomname).emit('room users', participators);
+        io.to(roomname).emit('users in room', participators);
       }
 
       /* update data about room and send updated data about room to all clients */
@@ -223,7 +244,7 @@ app.prepare().then(() => {
         roomname: roomname,
         amount: participators.length,
       };
-      io.emit('room update', updatedDataForRoom);
+      io.emit(socketEvents.ROOM_UPDATE, updatedDataForRoom);
 
       callback({ status: 200 });
     });
@@ -234,7 +255,7 @@ app.prepare().then(() => {
       const isDisconnected = matchingSockets.size === 0;
       if (isDisconnected) {
         // notify other users
-        socket.broadcast.emit('user disconnected', socket.userID);
+        socket.broadcast.emit(socketEvents.USER_DISCONNECTED, socket.userID);
         // update the connection status of the session
         sessionStore.saveSession(socket.sessionID, {
           userID: socket.userID,

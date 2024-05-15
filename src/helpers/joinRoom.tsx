@@ -1,4 +1,4 @@
-import { socket } from '@/socket';
+import { socket, socketEvents } from '@/socket';
 
 export function joinRoom(roomname: Omit<FormDataEntryValue, 'File'>) {
   if (!roomname) {
@@ -11,7 +11,7 @@ export function joinRoom(roomname: Omit<FormDataEntryValue, 'File'>) {
   const promise: Promise<{ success: boolean; description: string }> =
     new Promise((resolve, reject) => {
       socket.emit(
-        'join room',
+        socketEvents.JOIN_ROOM,
         { roomname },
         (response: { success: boolean; description: string }) => {
           resolve(response);
