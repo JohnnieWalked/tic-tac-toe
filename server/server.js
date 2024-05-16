@@ -33,6 +33,7 @@ const socketEvents = {
   USER_DISCONNECTED: 'user disconnected',
   CREATE_GAME: 'create game',
   JOIN_ROOM: 'join room',
+  LEAVE_ROOM: 'leave room',
   CHAT_MESSAGE: 'chat message',
 };
 
@@ -176,6 +177,14 @@ app.prepare().then(() => {
         amount: participators.length,
       };
 
+      /* send notification about user */
+      const data = {
+        username: socket.username,
+        userID: socket.userID,
+        introduction: true,
+      };
+      io.to(roomname).emit(socketEvents.CHAT_MESSAGE, data);
+
       /* send to all connected clients updated info about room */
       io.emit(socketEvents.ROOM_UPDATE, updatedDataForRoom);
 
@@ -186,21 +195,15 @@ app.prepare().then(() => {
     });
 
     /* send chat message */
-    socket.on(
-      socketEvents.CHAT_MESSAGE,
-      ({ message, roomname, introduction = false }) => {
-        const data = {
-          username: socket.username,
-          userID: socket.userID,
-          message,
-        };
-        if (introduction) {
-          data.introduction = true;
-        }
+    socket.on(socketEvents.CHAT_MESSAGE, ({ message, roomname }) => {
+      const data = {
+        username: socket.username,
+        userID: socket.userID,
+        message,
+      };
 
-        io.to(roomname).emit(socketEvents.CHAT_MESSAGE, data);
-      }
-    );
+      io.to(roomname).emit(socketEvents.CHAT_MESSAGE, data);
+    });
 
     /* listen for users in room */
     socket.on('users in room', async ({ roomname }) => {
@@ -209,7 +212,7 @@ app.prepare().then(() => {
     });
 
     /* leave room */
-    socket.on('leave room', async ({ roomname }, callback) => {
+    socket.on(socketEvents.LEAVE_ROOM, async ({ roomname }, callback) => {
       const room = roomStore.findRoom(roomname);
       if (!room) {
         return callback({

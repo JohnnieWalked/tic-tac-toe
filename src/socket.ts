@@ -23,6 +23,7 @@ export const socketEvents = {
   USER_DISCONNECTED: 'user disconnected',
   CREATE_GAME: 'create game',
   JOIN_ROOM: 'join room',
+  LEAVE_ROOM: 'leave room',
   CHAT_MESSAGE: 'chat message',
 };
 

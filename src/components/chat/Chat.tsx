@@ -25,7 +25,7 @@ type ChatProps = {
 type ChatMessage = {
   username: string;
   userID: string;
-  message: string;
+  message?: string;
   introduction?: boolean;
   abandon?: boolean;
 };
@@ -62,6 +62,12 @@ export default function Chat({
             title: 'Success!',
             description: result.description,
           });
+        } else {
+          toast({
+            title: 'Error!',
+            variant: 'destructive',
+            description: result.description,
+          });
         }
       });
     }
@@ -69,11 +75,6 @@ export default function Chat({
 
   /* notify about joining user */
   useEffect(() => {
-    socket.emit(socketEvents.CHAT_MESSAGE, {
-      roomname,
-      introduction: true,
-    });
-
     function updateChat(data: ChatMessage) {
       setHistory((state) => [
         ...state,

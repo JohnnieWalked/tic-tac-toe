@@ -19,7 +19,7 @@ export default function GameRoomPage({ searchParams }: GameRoomPageProps) {
         <GameField animateGameplay={false} disableClickSquare={false} />
       </div>
       <Chat roomnameURLQuery={roomname} passwordURLQuery={password} />
-      <LeaveRoomButton roomname={roomname} />
+      <LeaveRoomButton />
     </div>
   );
 }
