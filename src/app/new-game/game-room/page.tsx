@@ -18,8 +18,8 @@ export default function GameRoomPage({ searchParams }: GameRoomPageProps) {
       <div className="w-max overflow-hidden">
         <GameField animateGameplay={false} disableClickSquare={false} />
       </div>
-      <Chat />
-      <LeaveRoomButton roomname={roomname} />
+      <Chat roomnameURLQuery={roomname} passwordURLQuery={password} />
+      <LeaveRoomButton />
     </div>
   );
 }

@@ -8,27 +8,27 @@ import { Input } from '../ui/input';
 
 export type Room = {
   id: string;
-  // isPrivate: boolean;
+  isPrivate: boolean;
   amount: number;
-  room: string;
+  roomname: string;
 };
 
 export const columns: ColumnDef<Room>[] = [
-  // {
-  //   accessorKey: 'isPrivate',
-  //   header: undefined,
-  //   cell: ({ row }) => {
-  //     return (
-  //       <div className="flex items-center justify-center">
-  //         {row.getValue('isPrivate') ? (
-  //           <FaLock className=" text-primary" />
-  //         ) : null}
-  //       </div>
-  //     );
-  //   },
-  // },
   {
-    accessorKey: 'room',
+    accessorKey: 'isPrivate',
+    header: undefined,
+    cell: ({ row }) => {
+      return (
+        <div className="flex items-center justify-center">
+          {row.getValue('isPrivate') ? (
+            <FaLock className=" text-primary" />
+          ) : null}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: 'roomname',
     header: 'Room',
   },
   {
@@ -44,7 +44,7 @@ export const columns: ColumnDef<Room>[] = [
               type="hidden"
               name="roomname"
               id="roomname"
-              value={row.getValue('room')}
+              value={row.getValue('roomname')}
             />
             <Button
               type="submit"

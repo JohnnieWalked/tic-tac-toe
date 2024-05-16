@@ -1,48 +1,43 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { socket } from '@/socket';
+import { socket, socketEvents } from '@/socket';
 
 /* rtk */
-import { useAppDispatch } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { roomSliceActions } from '@/store/slices/roomSlice';
 
 /* components */
 import PrimaryButton from '../common/PrimaryButton';
 import { useEffect } from 'react';
+import Link from 'next/link';
 
-type LeaveRoomButtonProps = {
-  roomname: string;
-};
-
-export default function LeaveRoomButton({ roomname }: LeaveRoomButtonProps) {
-  const router = useRouter();
+export default function LeaveRoomButton() {
   const dispatch = useAppDispatch();
+  const { roomname } = useAppSelector((state) => state.roomSlice);
 
   /* leave room after leaving page */
   useEffect(() => {
     return () => {
+      if (!roomname) return;
       socket.emit(
-        'leave room',
+        socketEvents.LEAVE_ROOM,
         { roomname },
         (response: { status: number }) => {
           if (response.status === 200) {
             dispatch(roomSliceActions.setRoomName(''));
-            router.push('/new-game/');
           }
         }
       );
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [dispatch, roomname]);
 
   return (
     <PrimaryButton
-      onClick={() => router.push('/new-game/')}
+      asChild
       variant="destructive"
       className=" mt-10 md:col-span-2"
     >
-      Leave game
+      <Link href={'/new-game/'}>Leave game</Link>
     </PrimaryButton>
   );
 }

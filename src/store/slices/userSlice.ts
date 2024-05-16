@@ -42,7 +42,6 @@ export const userSlice = createSlice({
     },
     updateAllUsersData(state, action: PayloadAction<UserInfo[]>) {
       /* we used PRODUCE from IMMER to avoid mutation; logic => we check for existing user with same userID and set status; if user hasn't been found => just add new user;  */
-      console.log(action.payload);
       return produce(state, (draft) => {
         action.payload.forEach((user) => {
           for (let i = 0; i < draft.allUsersArray.length; i++) {

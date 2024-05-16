@@ -2,7 +2,12 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '..';
 
-const initialState = {
+type RoomSliceProps = {
+  roomname: string;
+  password: string;
+};
+
+const initialState: RoomSliceProps = {
   roomname: '',
   password: '',
 };

@@ -17,6 +17,11 @@ function StatusBar(
   const [isConnected, setIsConnected] = useState<boolean>();
   const [transport, setTransport] = useState('N/A');
 
+  /* 
+    auto connect: get sessionID from localStorage and pass via socket-handshake to server.
+    If current session exists in server memory storage -> get data about this session.
+    Else -> get new generated data (except entered username) from server about user.
+  */
   useEffect(() => {
     const sessionID = localStorage.getItem('sessionID');
 
@@ -39,9 +44,6 @@ function StatusBar(
   }, [dispatch]);
 
   useEffect(() => {
-    if (socket.connected) {
-      onConnect();
-    }
     function onConnect() {
       setIsConnected(true);
       setTransport(socket.io.engine.transport.name);
@@ -57,6 +59,10 @@ function StatusBar(
       dispatch(userSliceActions.updateAllUsersData(data));
     }
 
+    if (socket.connected) {
+      onConnect();
+    }
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('users', (data: UserInfo[]) => updateAllUsersData(data));
@@ -64,15 +70,12 @@ function StatusBar(
     socket.on('user disconnected', (userID: string) =>
       dispatch(userSliceActions.userDisconnected(userID))
     );
-
     socket.on('connect_error', (err) => {
-      if (err.message === 'invalid username') {
-        toast({
-          title: 'Error!',
-          variant: 'destructive',
-          description: 'Invalid username!',
-        });
-      }
+      toast({
+        title: 'Error!',
+        variant: 'destructive',
+        description: err.message,
+      });
     });
 
     return () => {

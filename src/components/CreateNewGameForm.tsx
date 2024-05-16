@@ -31,7 +31,7 @@ export default function CreateRoomForm() {
     }
     const result = CreateGameSchema.safeParse({
       roomname: formData.get('roomname'),
-      // password: formData.get('password'),
+      password: formData.get('password'),
     });
 
     if (!result.success) {
@@ -47,7 +47,8 @@ export default function CreateRoomForm() {
       socket.emit(
         'create game',
         {
-          roomname: result.data.roomname /* , password: result.data.password */,
+          roomname: result.data.roomname,
+          password: result.data.password,
         },
         (response: { success: boolean; description: string }) => {
           /* after creating a game -> automatically throw user into game-room (lobby) */
@@ -57,8 +58,8 @@ export default function CreateRoomForm() {
               description: 'Lobby has been created.',
             });
             dispatch(roomSliceActions.setRoomName(result.data.roomname));
+            dispatch(roomSliceActions.setPassword(result.data.password));
             router.push(`/new-game/game-room?roomname=${result.data.roomname}`);
-            // dispatch(roomSliceActions.setPassword(result.data.password));
           } else {
             toast({
               title: 'Oops...',
@@ -93,11 +94,10 @@ export default function CreateRoomForm() {
       <div>
         <Label>Password:</Label>
         <Input
-          disabled
           className=""
           id="password"
           name="password"
-          placeholder="Temporary unavailable..."
+          placeholder="Leave empty to allow free access"
         />
       </div>
 
