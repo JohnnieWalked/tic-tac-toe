@@ -4,12 +4,10 @@ import type { RootState } from '..';
 
 type RoomSliceProps = {
   roomname: string;
-  password: string;
 };
 
 const initialState: RoomSliceProps = {
   roomname: '',
-  password: '',
 };
 
 export const roomSlice = createSlice({
@@ -18,9 +16,6 @@ export const roomSlice = createSlice({
   reducers: {
     setRoomName(state, action: PayloadAction<string>) {
       state.roomname = action.payload;
-    },
-    setPassword(state, action: PayloadAction<string>) {
-      state.password = action.payload;
     },
   },
 });

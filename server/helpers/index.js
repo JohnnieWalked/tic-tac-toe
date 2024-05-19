@@ -3,7 +3,10 @@ const bcryptjs = require('bcryptjs');
 const { Server } = require('socket.io');
 
 const randomId = () => crypto.randomBytes(8).toString('hex');
-const hashPassword = async (password) => await bcryptjs.hash(password, 10);
+const hashPassword = async (password) =>
+  password ? await bcryptjs.hash(password, 10) : '';
+const comparePasswords = async (password, hashedPassword) =>
+  await bcryptjs.compare(password, hashedPassword);
 
 /** Gets up-to-date info about sockets in room.
  * @param {Server} io indicates socket.io server;
@@ -27,5 +30,6 @@ const getInfoAboutUsersInRoom = async (io, roomname) => {
 module.exports = {
   randomId,
   hashPassword,
+  comparePasswords,
   getInfoAboutUsersInRoom,
 };

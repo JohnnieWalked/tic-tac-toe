@@ -5,6 +5,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import JoinRoomForm from '../JoinRoomForm';
 import { Input } from '../ui/input';
+import PrimaryButton from '../common/PrimaryButton';
 
 export type Room = {
   id: string;
@@ -46,13 +47,13 @@ export const columns: ColumnDef<Room>[] = [
               id="roomname"
               value={row.getValue('roomname')}
             />
-            <Button
+            <PrimaryButton
               type="submit"
               className=" text-green-700 hover:text-background dark:text-green-700 dark:hover:text-primary hover:bg-green-700"
               variant="ghost"
             >
-              <span>Join game</span>
-            </Button>
+              Join game
+            </PrimaryButton>
           </JoinRoomForm>
         </div>
       );

@@ -50,16 +50,21 @@ export default function CreateRoomForm() {
           roomname: result.data.roomname,
           password: result.data.password,
         },
-        (response: { success: boolean; description: string }) => {
+        (response: {
+          success: boolean;
+          hashedPassword?: string;
+          description: string;
+        }) => {
           /* after creating a game -> automatically throw user into game-room (lobby) */
           if (response.success) {
             toast({
               title: 'Success!',
-              description: 'Lobby has been created.',
+              description: response.description,
             });
             dispatch(roomSliceActions.setRoomName(result.data.roomname));
-            dispatch(roomSliceActions.setPassword(result.data.password));
-            router.push(`/new-game/game-room?roomname=${result.data.roomname}`);
+            router.push(
+              `/new-game/game-room?roomname=${result.data.roomname}&?password=${response.hashedPassword}`
+            );
           } else {
             toast({
               title: 'Oops...',

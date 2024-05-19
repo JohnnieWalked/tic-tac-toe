@@ -55,7 +55,7 @@ export default function Chat({
   useEffect(() => {
     if (!roomname) {
       startTransition(async () => {
-        const result = await joinRoom(roomnameURLQuery);
+        const result = await joinRoom(roomnameURLQuery, passwordURLQuery);
         if (result.success) {
           dispatch(roomSliceActions.setRoomName(roomnameURLQuery));
           toast({
@@ -71,7 +71,7 @@ export default function Chat({
         }
       });
     }
-  }, [dispatch, roomname, roomnameURLQuery, toast]);
+  }, [dispatch, passwordURLQuery, roomname, roomnameURLQuery, toast]);
 
   /* notify about joining user */
   useEffect(() => {
@@ -94,12 +94,12 @@ export default function Chat({
     }
 
     socket.on(socketEvents.CHAT_MESSAGE, updateChat);
-    socket.emit('users in room', { roomname });
-    socket.on('users in room', roomParticipators);
+    socket.emit(socketEvents.USERS_IN_ROOM, { roomname });
+    socket.on(socketEvents.USERS_IN_ROOM, roomParticipators);
 
     return () => {
       socket.off(socketEvents.CHAT_MESSAGE, updateChat);
-      socket.off('users in room', roomParticipators);
+      socket.off(socketEvents.USERS_IN_ROOM, roomParticipators);
     };
   }, [roomname]);
 
