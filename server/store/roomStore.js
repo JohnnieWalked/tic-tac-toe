@@ -6,6 +6,23 @@
   deleteRoom(roomname) {}
 }
 
+/**
+ * @typedef {Object} Participator
+ * @property {string} username - The username of the participator.
+ * @property {string} userID - The user ID of the participator.
+ */
+
+/**
+ * @typedef {Object} Room
+ * @property {string} roomname - The name of the room.
+ * @property {string} password - The password for the room.
+ * @property {number[]} gameState - The game state of the room.
+ * @property {Participator[]} participators - The list of participators in the room.
+ * @property {string|null} playerX - The player X in the game.
+ * @property {string|null} playerO - The player O in the game.
+ * @property {string|null} whoseTurn - Indicates whose turn it is.
+ */
+
 class InMemoryRoomStore extends RoomStore {
   constructor() {
     super();
@@ -14,14 +31,14 @@ class InMemoryRoomStore extends RoomStore {
 
   /** Receives roomname and returns the room with same name.
    * @param {string} roomname indicates name of socket.io room;
-   * @returns {{roomname: string, password: string, gameState: [][], participators: [{username: string, userID: string}]}}
+   * @returns {Room}
    */
   findRoom(roomname) {
     return this.rooms.get(roomname);
   }
 
   /** Returns an array of rooms.
-   * @returns {{roomname: string, password: string, gameState: [][], participators: [{username: string, userID: string}]}[]}
+   * @returns {Room[]}
    */
   findAllRooms() {
     return [...this.rooms.values()];
@@ -29,7 +46,7 @@ class InMemoryRoomStore extends RoomStore {
 
   /** Creates new room.
    * @param {string} roomname indicates name of socket.io room;
-   * @param {{roomname: string, password: string, gameState: [][], participators: [{username: string, userID: string}]}} roomData indicates name of socket.io room;
+   * @param {Room} roomData indicates data about socket.io room;
    */
   saveRoom(roomname, roomData) {
     this.rooms.set(roomname, roomData);
@@ -37,7 +54,7 @@ class InMemoryRoomStore extends RoomStore {
 
   /** Updates room data.
    * @param {string} roomname indicates name of socket.io room;
-   * @param {{roomname: string, password: string, gameState: [][], participators: [{username: string, userID: string}]}} roomData indicates name of socket.io room;
+   * @param {Partial<Room>} roomData indicates data about socket.io room;
    */
   updateRoom(roomname, roomData) {
     const existingData = this.rooms.get(roomname);
@@ -47,7 +64,6 @@ class InMemoryRoomStore extends RoomStore {
 
   /** Receives roomname and deletes the room with same name.
    * @param {string} roomname indicates name of socket.io room;
-   * @returns {{roomname: string, password: string, gameState: [][], participators: [{username: string, userID: string}]}}
    */
   deleteRoom(roomname) {
     this.rooms.delete(roomname);

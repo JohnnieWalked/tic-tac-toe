@@ -8,9 +8,10 @@ const hashPassword = async (password) =>
 const comparePasswords = async (password, hashedPassword) =>
   await bcryptjs.compare(password, hashedPassword);
 
-/** Gets up-to-date info about sockets in room.
+/** Get up-to-date info about sockets in room.
  * @param {Server} io indicates socket.io server;
  * @param {string} roomname indicates name of socket.io room;
+ * @returns {Promise<import('../store/roomStore').Participator[]>}
  */
 const getInfoAboutUsersInRoom = async (io, roomname) => {
   const socketsInRoom = await io.in(roomname).fetchSockets();
@@ -26,6 +27,13 @@ const getInfoAboutUsersInRoom = async (io, roomname) => {
   });
   return participators;
 };
+
+/** Check if current role is free to use.
+ * @param {import('../store/roomStore').Room} room indicates room from roomStore;
+ * @param {string} roleToCheck indicates role;
+ * @returns {boolean}
+ */
+const isRoleFree = (roomRole, roleToCheck) => {};
 
 module.exports = {
   randomId,

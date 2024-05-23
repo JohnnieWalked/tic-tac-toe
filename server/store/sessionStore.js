@@ -4,6 +4,13 @@
   findAllSessions() {}
 }
 
+/**
+ * @typedef {Object} Session
+ * @property {string} username - The username of the participator.
+ * @property {string} userID - The user ID of the participator.
+ * @property {boolean} connected - Indicates whether the user is connected.
+ */
+
 class InMemorySessionStore extends SessionStore {
   constructor() {
     super();
@@ -12,7 +19,7 @@ class InMemorySessionStore extends SessionStore {
 
   /** Receives sessionID and returns the session with same id.
    * @param {string} id indicates unique sessionID string;
-   * @returns {{userID: string, username: string, connected: boolean}}
+   * @returns {Session}
    */
   findSession(id) {
     return this.sessions.get(id);
@@ -20,14 +27,14 @@ class InMemorySessionStore extends SessionStore {
 
   /** Creates new session.
    * @param {string} id indicates unique sessionID string;
-   * @param {{userID: string, username: string, connected: boolean}} sessionParams indicates params of each session.;
+   * @param {Session} sessionParams indicates params of each session.;
    */
   saveSession(id, sessionParams) {
     this.sessions.set(id, sessionParams);
   }
 
   /** Returns an array of sessions.
-   * @returns {{userID: string, username: string, connected: boolean}[]}
+   * @returns {Session[]}
    */
   findAllSessions() {
     return [...this.sessions.values()];

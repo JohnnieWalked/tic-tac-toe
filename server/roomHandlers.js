@@ -60,6 +60,9 @@ module.exports = (io, socket, roomStore) => {
             ],
           ],
           participators: participators,
+          playerX: null,
+          playerO: null,
+          whoseTurn: null,
         });
 
         const roomData = {
@@ -198,7 +201,7 @@ module.exports = (io, socket, roomStore) => {
       } else {
         roomStore.updateRoom(roomname, { participators: participators });
         /* send new data about participators in the room */
-        io.to(roomname).emit('users in room', participators);
+        io.to(roomname).emit(socketEvents.USERS_IN_ROOM, participators);
       }
 
       /* update data about room and send updated data about room to all clients */
@@ -233,6 +236,88 @@ module.exports = (io, socket, roomStore) => {
     });
   };
 
+  /* role selection */
+  const selectRole = () => {
+    socket.on(
+      socketEvents.ROLE_SELECTION,
+      ({ currentRole, roomname }, callback) => {
+        const room = roomStore.findRoom(roomname);
+        if (!room) {
+          return callback({
+            success: false,
+            description: 'Room does not exist!',
+          });
+        }
+
+        /* find out which key use to compare */
+        let roleKey;
+        switch (currentRole) {
+          case 'x':
+            roleKey = 'playerX';
+            break;
+          case 'o':
+            roleKey = 'playerO';
+            break;
+          default:
+            break;
+        }
+
+        /* if role is 'X' or 'O' -> check availability of roles */
+        if (roleKey) {
+          /* if role already has a value -> check it */
+          if (room[roleKey]) {
+            if (socket.userID === room[roleKey]) {
+              return callback({
+                success: true,
+                description: 'You have already selected this role!',
+              });
+            } else {
+              return callback({
+                success: false,
+                description: 'This role is already taken!',
+              });
+            }
+          } else {
+            /* if role does NOT have a value -> update roomStore data */
+            roomStore.updateRoom(roomname, { roleKey: socket.userID });
+          }
+        } else {
+          /* if user selected 'no role' -> find if room.playerX or room.playerO has socket.userID and update value */
+          if (room.playerX === socket.userID) {
+            roomStore.updateRoom(roomname, { playerX: null });
+          } else if (room.playerO === socket.userID) {
+            roomStore.updateRoom(roomname, { playerO: null });
+          }
+        }
+
+        return callback({
+          success: true,
+          description: 'Role has been successfully assigned!',
+        });
+      }
+    );
+  };
+
+  /* listen for room roles */
+  const roomRoles = () => {
+    socket.on(socketEvents.ROOM_ROLES, ({ roomname }) => {
+      const room = roomStore.findRoom(roomname);
+      if (!room) {
+        return callback({
+          success: false,
+          description: 'Room does not exist!',
+        });
+      }
+
+      const data = {
+        playerX: room.playerX,
+        playerO: room.playerO,
+      };
+
+      io.to(roomname).emit(socketEvents.ROOM_ROLES, data);
+    });
+  };
+
   allRooms();
   createRoom();
   joinRoom();
@@ -240,4 +325,6 @@ module.exports = (io, socket, roomStore) => {
   listenRoomUsers();
   handleMessageSend();
   isRoomPrivate();
+  selectRole();
+  roomRoles();
 };

@@ -40,15 +40,18 @@ export default function GameField({
 
   /* animation of gameplay */
   useEffect(() => {
-    let i = 0;
+    let isLoopCancelled = false;
 
     async function animation() {
       await new Promise((r) => setTimeout(r, 4000));
 
-      for (i; i < ANIMATION_TEMPLATE.length; i++) {
+      for (let i = 0; i < ANIMATION_TEMPLATE.length; i++) {
+        if (isLoopCancelled) break;
         setGameState((state) => (state = ANIMATION_TEMPLATE[i]));
 
         await new Promise((r) => setTimeout(r, 1200));
+
+        if (isLoopCancelled) break;
 
         const findWinner = calculateWinner(ANIMATION_TEMPLATE[i], FIELD_SIZE);
         if (findWinner?.winner) {
@@ -65,14 +68,14 @@ export default function GameField({
 
     /* clean up is declared to break loop after leaving the page */
     return () => {
-      i = 999;
+      isLoopCancelled = true;
     };
   }, [animateGameplay]);
 
   /* end game */
   useEffect(() => {
     async function gg() {
-      if (gameState && calculateWinner(gameState, FIELD_SIZE)) {
+      if (gameState && calculateWinner(gameState, FIELD_SIZE)?.winner) {
         await new Promise((r) => setTimeout(r, 1200));
         setGameOver(true);
       }

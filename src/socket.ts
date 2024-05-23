@@ -27,6 +27,8 @@ export const socketEvents = {
   LEAVE_ROOM: 'leave room',
   CHAT_MESSAGE: 'chat message',
   IS_ROOM_PRIVATE: 'is room private',
+  ROLE_SELECTION: 'role selection',
+  ROOM_ROLES: 'room roles',
 };
 
 socket.onAny((event, ...args) => {

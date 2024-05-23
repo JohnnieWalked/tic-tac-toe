@@ -3,7 +3,6 @@ const next = require('next');
 
 /* socket */
 const { Server } = require('socket.io');
-const { socketEvents } = require('./socketEvents');
 
 /* handlers */
 const sessionHandlers = require('./sessionHandlers');
