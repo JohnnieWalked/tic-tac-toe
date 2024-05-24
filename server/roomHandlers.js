@@ -60,8 +60,8 @@ module.exports = (io, socket, roomStore) => {
             ],
           ],
           participators: participators,
-          playerX: null,
-          playerO: null,
+          x: null,
+          o: null,
           whoseTurn: null,
         });
 
@@ -240,7 +240,7 @@ module.exports = (io, socket, roomStore) => {
   const selectRole = () => {
     socket.on(
       socketEvents.ROLE_SELECTION,
-      ({ currentRole, roomname }, callback) => {
+      ({ selectedRole, roomname }, callback) => {
         const room = roomStore.findRoom(roomname);
         if (!room) {
           return callback({
@@ -249,46 +249,55 @@ module.exports = (io, socket, roomStore) => {
           });
         }
 
-        /* find out which key use to compare */
-        let roleKey;
-        switch (currentRole) {
-          case 'x':
-            roleKey = 'playerX';
-            break;
-          case 'o':
-            roleKey = 'playerO';
-            break;
-          default:
-            break;
+        /* check if user is a part of the room */
+        if (!room.participators.find((user) => user.userID === socket.userID)) {
+          return callback({
+            success: false,
+            description: 'Something went wrong...',
+          });
         }
 
-        /* if role is 'X' or 'O' -> check availability of roles */
-        if (roleKey) {
+        /* if role is 'x' or 'o' -> check availability of roles */
+        if (selectedRole !== 'no role') {
           /* if role already has a value -> check it */
-          if (room[roleKey]) {
-            if (socket.userID === room[roleKey]) {
+          if (room[selectedRole]) {
+            if (socket.userID === room[selectedRole]) {
               return callback({
                 success: true,
                 description: 'You have already selected this role!',
               });
-            } else {
-              return callback({
-                success: false,
-                description: 'This role is already taken!',
-              });
             }
-          } else {
-            /* if role does NOT have a value -> update roomStore data */
-            roomStore.updateRoom(roomname, { roleKey: socket.userID });
+            return callback({
+              success: false,
+              description: 'This role is already taken!',
+            });
           }
+          if (room.x === socket.userID) {
+            room.x = null;
+          }
+          if (room.o === socket.userID) {
+            room.o = null;
+          }
+          room[selectedRole] = socket.userID;
+          /* if role does NOT have a value -> update roomStore data */
+          roomStore.updateRoom(roomname, { ...room });
         } else {
-          /* if user selected 'no role' -> find if room.playerX or room.playerO has socket.userID and update value */
-          if (room.playerX === socket.userID) {
-            roomStore.updateRoom(roomname, { playerX: null });
-          } else if (room.playerO === socket.userID) {
-            roomStore.updateRoom(roomname, { playerO: null });
+          /* if user selected 'no role' -> find if room.x or room.o has socket.userID and update value */
+          if (room.x === socket.userID) {
+            room.x = null;
+            roomStore.updateRoom(roomname, { x: null });
+          }
+          if (room.o === socket.userID) {
+            room.o = null;
+            roomStore.updateRoom(roomname, { o: null });
           }
         }
+
+        const data = {
+          x: room.x,
+          o: room.o,
+        };
+        io.to(roomname).emit(socketEvents.ROOM_ROLES, data);
 
         return callback({
           success: true,
@@ -302,18 +311,13 @@ module.exports = (io, socket, roomStore) => {
   const roomRoles = () => {
     socket.on(socketEvents.ROOM_ROLES, ({ roomname }) => {
       const room = roomStore.findRoom(roomname);
-      if (!room) {
-        return callback({
-          success: false,
-          description: 'Room does not exist!',
-        });
-      }
+      if (!room) return;
+      console.log(room);
 
       const data = {
-        playerX: room.playerX,
-        playerO: room.playerO,
+        x: room.x,
+        o: room.o,
       };
-
       io.to(roomname).emit(socketEvents.ROOM_ROLES, data);
     });
   };

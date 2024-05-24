@@ -74,7 +74,7 @@ export default function JoinRoomForm({
     socket.emit(
       socketEvents.IS_ROOM_PRIVATE,
       { roomname },
-      (response: boolean | { success: boolean; description: string }) => {
+      (response: boolean | IResponseFromServer) => {
         /* if password is needed -> show modal dialog; if not -> start connecting to the room */
         if (typeof response !== 'object') {
           response ? setShowDialog(true) : connectToRoom(roomname);

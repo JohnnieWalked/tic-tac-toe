@@ -1,20 +1,16 @@
 import React from 'react';
+import { twMerge } from 'tailwind-merge';
 
-type SubheaderProps = {
-  props?: React.DetailedHTMLProps<
+export default function Subheader(
+  props: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLHeadingElement>,
     HTMLHeadingElement
-  >;
-  children?: React.ReactNode;
-};
-
-export default function Subheader({ props, children }: SubheaderProps) {
+  >
+) {
+  const className = twMerge('text-xl text-center font-bold', props.className);
   return (
-    <h2
-      {...props}
-      className={`text-xl text-center font-bold ${props?.className}`}
-    >
-      {children}
+    <h2 {...props} className={className}>
+      {props.children}
     </h2>
   );
 }

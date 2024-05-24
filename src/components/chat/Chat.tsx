@@ -1,26 +1,16 @@
 'use client';
 
-import { useState, useRef, useEffect, startTransition } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { socket, socketEvents } from '@/socket';
-import { useToast } from '../ui/use-toast';
 
 /* rtk */
 import { useAppSelector, useAppDispatch } from '@/hooks/hooks';
-import { roomSliceActions } from '@/store/slices/roomSlice';
-
-/* helpers */
-import { joinRoom } from '@/helpers/joinRoom';
 
 /* components */
 import { Input } from '../ui/input';
 import PrimaryButton from '../common/PrimaryButton';
 import ChatMessage from './ChatMessage';
 import ChatMemberStatus from './ChatMemberStatus';
-
-type ChatProps = {
-  roomnameURLQuery: string;
-  passwordURLQuery: string;
-};
 
 type ChatMessage = {
   username: string;
@@ -30,18 +20,13 @@ type ChatMessage = {
   abandon?: boolean;
 };
 
-export default function Chat({
-  roomnameURLQuery,
-  passwordURLQuery,
-}: ChatProps) {
-  const dispatch = useAppDispatch();
+export default function Chat() {
   const { username, allUsersArray } = useAppSelector(
     (state) => state.userSlice
   );
-  const { roomname } = useAppSelector((state) => state.roomSlice);
-  const { toast } = useToast();
-  const [participators, setParticipators] =
-    useState<{ username: string; userID: string }[]>();
+  const { roomname, participators } = useAppSelector(
+    (state) => state.roomSlice
+  );
   const [history, setHistory] = useState<ChatMessage[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -50,28 +35,6 @@ export default function Chat({
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [history]);
-
-  /* reconnect if user refreshed the page  */
-  useEffect(() => {
-    if (!roomname) {
-      startTransition(async () => {
-        const result = await joinRoom(roomnameURLQuery, passwordURLQuery);
-        if (result.success) {
-          dispatch(roomSliceActions.setRoomName(roomnameURLQuery));
-          toast({
-            title: 'Success!',
-            description: result.description,
-          });
-        } else {
-          toast({
-            title: 'Error!',
-            variant: 'destructive',
-            description: result.description,
-          });
-        }
-      });
-    }
-  }, [dispatch, passwordURLQuery, roomname, roomnameURLQuery, toast]);
 
   /* notify about joining user */
   useEffect(() => {
@@ -88,18 +51,10 @@ export default function Chat({
       ]);
     }
 
-    /* set info about opponent */
-    function roomParticipators(data: { username: string; userID: string }[]) {
-      setParticipators(data);
-    }
-
     socket.on(socketEvents.CHAT_MESSAGE, updateChat);
-    socket.emit(socketEvents.USERS_IN_ROOM, { roomname });
-    socket.on(socketEvents.USERS_IN_ROOM, roomParticipators);
 
     return () => {
       socket.off(socketEvents.CHAT_MESSAGE, updateChat);
-      socket.off(socketEvents.USERS_IN_ROOM, roomParticipators);
     };
   }, [roomname]);
 
@@ -113,8 +68,8 @@ export default function Chat({
     socket.emit(socketEvents.CHAT_MESSAGE, { message: data, roomname });
   }
 
-  const renderedChatMembers = participators
-    ?.sort((a, b) => {
+  const renderedChatMembers = [...participators]
+    .sort((a, b) => {
       /* reason for sorting -> display socket.username (yourself) on the right side. */
       if (a.userID === socket.userID) {
         return 1;

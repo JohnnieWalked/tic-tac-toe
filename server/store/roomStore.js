@@ -9,7 +9,7 @@
 /**
  * @typedef {Object} Participator
  * @property {string} username - The username of the participator.
- * @property {string} userID - The user ID of the participator.
+ * @property {string} userID - The userID of the participator.
  */
 
 /**
@@ -18,8 +18,8 @@
  * @property {string} password - The password for the room.
  * @property {number[]} gameState - The game state of the room.
  * @property {Participator[]} participators - The list of participators in the room.
- * @property {string|null} playerX - The player X in the game.
- * @property {string|null} playerO - The player O in the game.
+ * @property {string|null} x - The X role of the participator.
+ * @property {string|null} o - The O role of the participator.
  * @property {string|null} whoseTurn - Indicates whose turn it is.
  */
 

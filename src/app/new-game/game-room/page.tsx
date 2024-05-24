@@ -1,8 +1,8 @@
 /* components */
 import GameField from '@/components/GameField';
 import Chat from '@/components/chat/Chat';
-import LeaveRoomButton from '@/components/lobby-room/LeaveRoomButton';
-import RoomControlBar from '@/components/lobby-room/RoomControlBar';
+import LeaveRoomButton from '@/components/room/LeaveRoomButton';
+import RoomControlBar from '@/components/room/RoomControlBar';
 
 interface GameRoomPageProps {
   searchParams: {
@@ -17,13 +17,16 @@ export default function GameRoomPage({ searchParams }: GameRoomPageProps) {
   return (
     <div>
       <section className="border rounded p-5">
-        <RoomControlBar roomnameURLQuery={roomname} />
+        <RoomControlBar
+          roomnameURLQuery={roomname}
+          passwordURLQuery={password}
+        />
       </section>
       <section className="grid grid-cols-1 md:grid-cols-2 grid-flow-row gap-10 place-items-center pt-5">
         <div className="w-max overflow-hidden">
           <GameField animateGameplay={false} disableClickSquare={false} />
         </div>
-        <Chat roomnameURLQuery={roomname} passwordURLQuery={password} />
+        <Chat />
         <LeaveRoomButton />
       </section>
     </div>
