@@ -68,8 +68,6 @@ export default function RoomControlBar({
   }, [dispatch, passwordURLQuery, roomname, roomnameURLQuery, toast]);
 
   useEffect(() => {
-    if (!roomname) return;
-
     /* set info about opponent */
     function roomParticipators(data: { username: string; userID: string }[]) {
       dispatch(roomSliceActions.setRoomParticipators(data));
@@ -84,10 +82,8 @@ export default function RoomControlBar({
 
     socket.emit(socketEvents.USERS_IN_ROOM, { roomname });
     socket.on(socketEvents.USERS_IN_ROOM, roomParticipators);
-    if (participators.length !== 0) {
-      socket.emit(socketEvents.ROOM_ROLES, { roomname });
-      socket.on(socketEvents.ROOM_ROLES, assignRolesToParticipators);
-    }
+    socket.emit(socketEvents.ROOM_ROLES, { roomname });
+    socket.on(socketEvents.ROOM_ROLES, assignRolesToParticipators);
 
     return () => {
       socket.off(socketEvents.USERS_IN_ROOM, roomParticipators);
@@ -118,6 +114,17 @@ export default function RoomControlBar({
       }
     );
   };
+
+  const renderedParticipators = participators.map((user) => {
+    return (
+      <Subheader className="text-base" key={user.userID}>
+        {user.username} -{' '}
+        <span className=" font-light italic">
+          {user.role ? user.role : 'no role'}
+        </span>
+      </Subheader>
+    );
+  });
 
   return (
     <div className="flex items-center justify-between">
@@ -194,18 +201,7 @@ export default function RoomControlBar({
           Room: <span className=" font-light italic">{roomnameURLQuery}</span>
         </Subheader>
         <div className="flex gap-2 items-center justify-center">
-          {[...participators]
-            .sort((a, b) => (a.userID === socket.userID ? 1 : -1))
-            .map((user) => {
-              return (
-                <Subheader className="text-base" key={user.userID}>
-                  {user.username} -{' '}
-                  <span className=" font-light italic">
-                    {user.role ? user.role : 'no role'}
-                  </span>
-                </Subheader>
-              );
-            })}
+          {renderedParticipators}
         </div>
       </div>
     </div>

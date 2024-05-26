@@ -217,8 +217,11 @@ module.exports = (io, socket, roomStore) => {
 
   /* listen for users in room */
   const listenRoomUsers = () => {
-    socket.on(socketEvents.USERS_IN_ROOM, async ({ roomname }) => {
-      const participators = await getInfoAboutUsersInRoom(io, roomname);
+    socket.on(socketEvents.USERS_IN_ROOM, ({ roomname }) => {
+      const room = roomStore.findRoom(roomname);
+      if (!room) return;
+
+      const participators = room.participators;
       io.to(roomname).emit(socketEvents.USERS_IN_ROOM, participators);
     });
   };
@@ -312,7 +315,6 @@ module.exports = (io, socket, roomStore) => {
     socket.on(socketEvents.ROOM_ROLES, ({ roomname }) => {
       const room = roomStore.findRoom(roomname);
       if (!room) return;
-      console.log(room);
 
       const data = {
         x: room.x,
