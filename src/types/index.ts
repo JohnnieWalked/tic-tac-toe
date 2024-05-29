@@ -1,7 +1,7 @@
 export interface IRoomParticipator {
   userID: string;
   username: string;
-  role?: string;
+  role?: 'x' | 'o';
 }
 
 export interface IRoom {

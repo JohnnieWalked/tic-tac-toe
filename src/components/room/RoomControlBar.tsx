@@ -28,6 +28,7 @@ import PrimaryButton from '../common/PrimaryButton';
 
 /* types */
 import type { IResponseFromServer } from '@/types';
+import Figure from '../common/Figure';
 
 type RoomControlBarProps = {
   roomnameURLQuery: string;
@@ -68,6 +69,7 @@ export default function RoomControlBar({
   }, [dispatch, passwordURLQuery, roomname, roomnameURLQuery, toast]);
 
   useEffect(() => {
+    if (!roomname) return;
     /* set info about opponent */
     function roomParticipators(data: { username: string; userID: string }[]) {
       dispatch(roomSliceActions.setRoomParticipators(data));
@@ -117,29 +119,29 @@ export default function RoomControlBar({
 
   const renderedParticipators = participators.map((user) => {
     return (
-      <Subheader className="text-base" key={user.userID}>
-        {user.username} -{' '}
-        <span className=" font-light italic">
-          {user.role ? user.role : 'no role'}
-        </span>
-      </Subheader>
+      <div
+        className="flex items-center justify-center tracking-wide"
+        key={user.userID}
+      >
+        {user.username}: <Figure className=" w-7 h-7 ml-2" role={user.role} />
+      </div>
     );
   });
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex flex-col items-center justify-center gap-3 text-base">
-        <Subheader className=" text-base">
-          Current mark:{' '}
-          <span className=" font-light italic">
-            {participators.find((item) => item.userID === socket.userID)
-              ?.role || 'no role'}
-          </span>
-        </Subheader>
+    <div className="relative grid grid-rows-[minmax(min-content,_auto)_1fr] grid-flow-col gap-y-3 place-items-center">
+      <Subheader className="">Current mark </Subheader>
+      <div className="flex flex-col justify-between items-center gap-2">
+        <Figure
+          className=" w-10 h-10"
+          role={
+            participators.find((item) => item.userID === socket.userID)?.role
+          }
+        />
         <Dialog onOpenChange={setShowDialog} open={showDialog}>
           <DialogTrigger asChild>
             <Button
-              className=" text-xs"
+              className=""
               onClick={() => setShowDialog(true)}
               variant={'outline'}
             >
@@ -153,30 +155,34 @@ export default function RoomControlBar({
               </DialogTitle>
             </DialogHeader>
             <form
-              className=" flex flex-col justify-center items-center gap-4"
+              className=" flex flex-col justify-center items-center gap-7"
               action={handleSubmit}
             >
               <div className="grid grid-cols-2 place-items-center gap-x-4 w-full h-full">
                 <PrimaryButton
                   type="submit"
-                  className=" w-fit h-fit text-6xl hover:scale-110 transition-all"
+                  className="relative w-full h-20 flex flex-col group/markX transition-all"
                   name="role"
                   value="x"
-                  variant="ghost"
+                  variant="outline"
                 >
-                  <RxCross2 />
+                  <RxCross2 className=" w-20 h-20 group-hover/markX:rotate-90 transition-all " />
+                  <span className="absolute -bottom-1/2 -translate-y-1/2 left-0 w-full text-base scale-0 group-hover/markX:scale-100 transition-all">
+                    1-st player
+                  </span>
                 </PrimaryButton>
                 <PrimaryButton
                   type="submit"
-                  className=" w-fit h-fit text-6xl hover:scale-110 transition-all"
+                  className=" relative w-full h-20 flex flex-col group/markO transition-all"
                   name="role"
                   value="o"
-                  variant="ghost"
+                  variant="outline"
                 >
-                  <RxCircle />
+                  <RxCircle className=" w-20 h-20 group-hover/markO:scale-50 transition-all" />
+                  <span className="absolute -bottom-1/2 -translate-y-1/2 left-0 w-full text-base scale-0 group-hover/markO:scale-100 transition-all">
+                    2-nd player
+                  </span>
                 </PrimaryButton>
-                <span className=" font-thin">1-st player</span>
-                <span className=" font-thin">2-nd player</span>
               </div>
               <div className=" w-full text-center relative before:absolute before:content-[''] before:w-full before:h-[1px] before:top-1/2 before:left-0 before:bg-foreground before:opacity-50 rounded">
                 <span className=" relative h-full min-w-fit px-5 bg-background">
@@ -196,13 +202,15 @@ export default function RoomControlBar({
           </DialogContent>
         </Dialog>
       </div>
-      <div>
-        <Subheader className=" text-base">
-          Room: <span className=" font-light italic">{roomnameURLQuery}</span>
-        </Subheader>
-        <div className="flex gap-2 items-center justify-center">
-          {renderedParticipators}
-        </div>
+
+      <Subheader>Room</Subheader>
+      <span className=" text-lg tracking-wide text-center">
+        {roomnameURLQuery}
+      </span>
+
+      <Subheader>Participators</Subheader>
+      <div className="flex flex-col items-center justify-center">
+        {renderedParticipators}
       </div>
     </div>
   );
