@@ -3,7 +3,10 @@ import { ANIMATION_TEMPLATE, FIELD_SIZE } from '@/constants';
 
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { socket } from '@/socket';
+import { socket, socketEvents } from '@/socket';
+
+/* rtk */
+import { useAppSelector } from '@/hooks/hooks';
 
 /* func-helpers */
 import { calculateWinner } from '@/helpers/calculateWinner';
@@ -37,9 +40,14 @@ export default function GameField({
   const [endLinePosition, setEndLinePosition] = useState<EndLinePosition>();
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [gameState, setGameState] = useState<number[][]>();
+  const { roomname, participators } = useAppSelector(
+    (state) => state.roomSlice
+  );
 
   /* animation of gameplay */
   useEffect(() => {
+    if (!animateGameplay) return;
+
     let isLoopCancelled = false;
 
     async function animation() {
@@ -72,12 +80,32 @@ export default function GameField({
     };
   }, [animateGameplay]);
 
+  /* socket events */
+  useEffect(() => {
+    if (animateGameplay || !roomname) return;
+
+    function updateGameState(data: { gameState: number[][] }) {
+      console.log(data.gameState);
+      setGameState(data.gameState);
+    }
+
+    socket.emit(socketEvents.WATCH_GAMESTATE, { roomname });
+    socket.on(socketEvents.WATCH_GAMESTATE, updateGameState);
+
+    return () => {
+      socket.off(socketEvents.WATCH_GAMESTATE, updateGameState);
+    };
+  }, [animateGameplay, roomname]);
+
   /* end game */
   useEffect(() => {
     async function gg() {
-      if (gameState && calculateWinner(gameState, FIELD_SIZE)?.winner) {
+      if (!gameState) return;
+      const findWinner = calculateWinner(gameState, FIELD_SIZE);
+      if (findWinner?.winner) {
         await new Promise((r) => setTimeout(r, 1200));
         setGameOver(true);
+        setEndLinePosition(findWinner.endGameAnimationStartFrom);
       }
     }
 
@@ -87,7 +115,13 @@ export default function GameField({
   const renderedSquares = gameState?.flat().map((item, index) => {
     return (
       <motion.div key={index} className={`square${index + 1} w-full h-full`}>
-        {<GameSquare player={item} isDisabled={disableClickSquare} />}
+        {
+          <GameSquare
+            pressedSquareIndex={index}
+            player={item}
+            isDisabledByParent={disableClickSquare}
+          />
+        }
       </motion.div>
     );
   });

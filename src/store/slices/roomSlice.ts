@@ -30,7 +30,7 @@ export const roomSlice = createSlice({
         draft.participators.forEach((participator) => {
           for (const [keyRole, userID] of Object.entries(action.payload)) {
             if (participator.userID === userID) {
-              participator.role = keyRole;
+              participator.role = keyRole as 'x' | 'o';
               return;
             }
             participator.role = undefined;

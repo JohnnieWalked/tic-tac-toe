@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useToast } from './ui/use-toast';
-import { socket } from '@/socket';
+import { socket, socketEvents } from '@/socket';
 import { CreateGameSchema } from '@/schemas';
 
 /* rtk */
@@ -45,7 +45,7 @@ export default function CreateRoomForm() {
 
     try {
       socket.emit(
-        'create game',
+        socketEvents.CREATE_GAME,
         {
           roomname: result.data.roomname,
           password: result.data.password,

@@ -91,7 +91,7 @@ export default function RoomControlBar({
       socket.off(socketEvents.USERS_IN_ROOM, roomParticipators);
       socket.off(socketEvents.ROOM_ROLES, assignRolesToParticipators);
     };
-  }, [dispatch, participators.length, roomname]);
+  }, [dispatch, roomname]);
 
   const handleSubmit = (formData: FormData) => {
     const roleSelected = formData.get('role');
@@ -123,7 +123,8 @@ export default function RoomControlBar({
         className="flex items-center justify-center tracking-wide"
         key={user.userID}
       >
-        {user.username}: <Figure className=" w-7 h-7 ml-2" role={user.role} />
+        <span>{user.username}:</span>{' '}
+        <Figure className=" w-7 h-7 ml-2" role={user.role} />
       </div>
     );
   });

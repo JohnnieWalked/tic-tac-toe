@@ -8,6 +8,7 @@ const { socketEvents } = require('./socketEvents');
 /* types */
 const { Server, Socket } = require('socket.io');
 const { InMemoryRoomStore } = require('./store/roomStore');
+const { FIELD_SIZE } = require('./constants');
 
 /**
  *
@@ -53,16 +54,16 @@ module.exports = (io, socket, roomStore) => {
           roomname: roomname,
           password: hashedPassword,
           gameState: [
-            [
-              [0, 0, 0],
-              [0, 0, 0],
-              [0, 0, 0],
-            ],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
           ],
+
           participators: participators,
           x: null,
           o: null,
           whoseTurn: null,
+          winner: null,
         });
 
         const roomData = {
@@ -282,6 +283,11 @@ module.exports = (io, socket, roomStore) => {
             room.o = null;
           }
           room[selectedRole] = socket.userID;
+
+          if (selectedRole === 'x') {
+            room.whoseTurn = socket.userID;
+          }
+
           /* if role does NOT have a value -> update roomStore data */
           roomStore.updateRoom(roomname, { ...room });
         } else {
@@ -293,6 +299,9 @@ module.exports = (io, socket, roomStore) => {
           if (room.o === socket.userID) {
             room.o = null;
             roomStore.updateRoom(roomname, { o: null });
+          }
+          if (room.whoseTurn === socket.userID) {
+            roomStore.updateRoom(roomname, { whoseTurn: null });
           }
         }
 
@@ -324,6 +333,83 @@ module.exports = (io, socket, roomStore) => {
     });
   };
 
+  /* listen for changes in game field */
+  const listenGameField = () => {
+    socket.on(socketEvents.WATCH_GAMESTATE, ({ roomname }) => {
+      const room = roomStore.findRoom(roomname);
+      if (!room) return;
+
+      const data = {
+        gameState: room.gameState,
+      };
+      io.to(roomname).emit(socketEvents.WATCH_GAMESTATE, data);
+    });
+  };
+
+  /* handle place mark */
+  const handlePlaceMark = () => {
+    socket.on(
+      socketEvents.PLACE_MARK,
+      ({ roomname, pressedSquareIndex }, callback) => {
+        const room = roomStore.findRoom(roomname);
+        if (!room) return;
+
+        if (room.winner) {
+          return callback({
+            success: true,
+            description: 'Game over! You still can have a rematch.',
+          });
+        }
+
+        if (room.x !== socket.userID && room.o !== socket.userID) {
+          return callback({
+            success: false,
+            description: 'You have not selected the mark!',
+          });
+        }
+
+        if (room.whoseTurn !== socket.userID) {
+          return callback({
+            success: false,
+            description: 'Wait for your opponent`s move!',
+          });
+        }
+
+        /*
+        1 indicates first player ("X" mark)
+        2 indicates seconds player ("O" mark)
+        */
+        const socketSelectedRole = room.x === socket.userID ? 1 : 2;
+        const newGameState = [...room.gameState.map((row) => [...row])];
+        const foundSquareUsingIndex = newGameState
+          .flat()
+          .find((item, index) => index === pressedSquareIndex);
+
+        if (foundSquareUsingIndex === 0) {
+          /* find which row need to be selected */
+          const targetRowIndex = Math.floor(pressedSquareIndex / FIELD_SIZE);
+          /* find which col need to be selected */
+          const targetColIndex = pressedSquareIndex % FIELD_SIZE;
+          newGameState[targetRowIndex][targetColIndex] = socketSelectedRole;
+          roomStore.updateRoom(roomname, { gameState: newGameState });
+        } else {
+          return callback({
+            success: false,
+            description: 'This square has been already marked!',
+          });
+        }
+
+        console.log(roomStore.findRoom(roomname));
+
+        const data = {
+          gameState: newGameState,
+        };
+
+        io.to(roomname).emit(socketEvents.WATCH_GAMESTATE, data);
+      }
+    );
+  };
+
   allRooms();
   createRoom();
   joinRoom();
@@ -333,4 +419,6 @@ module.exports = (io, socket, roomStore) => {
   isRoomPrivate();
   selectRole();
   roomRoles();
+  listenGameField();
+  handlePlaceMark();
 };

@@ -29,6 +29,8 @@ export const socketEvents = {
   IS_ROOM_PRIVATE: 'is room private',
   ROLE_SELECTION: 'role selection',
   ROOM_ROLES: 'room roles',
+  WATCH_GAMESTATE: 'watch gamestate',
+  PLACE_MARK: 'place mark',
 };
 
 socket.onAny((event, ...args) => {

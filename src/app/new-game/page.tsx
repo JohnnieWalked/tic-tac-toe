@@ -67,7 +67,7 @@ export default function NewGamePage() {
     <section className="flex flex-col gap-10">
       <div className="grid grid-cols-1 md:grid-cols-2 grid-flow-row gap-10 place-items-center ">
         <div className="flex flex-col items-center w-full gap-10">
-          <Subheader props={{ className: 'flex gap-4' }}>
+          <Subheader className=" flex gap-4">
             Players online:{' '}
             <span className=" font-light text-cyan-400">
               {onlineUsers.length} / {allUsersArray.length}

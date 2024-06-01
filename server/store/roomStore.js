@@ -16,11 +16,12 @@
  * @typedef {Object} Room
  * @property {string} roomname - The name of the room.
  * @property {string} password - The password for the room.
- * @property {number[]} gameState - The game state of the room.
+ * @property {number[][]} gameState - The game state of the room.
  * @property {Participator[]} participators - The list of participators in the room.
  * @property {string|null} x - The X role of the participator.
  * @property {string|null} o - The O role of the participator.
  * @property {string|null} whoseTurn - Indicates whose turn it is.
+ * @property {string|null} winner - Indicates userID of the winner.
  */
 
 class InMemoryRoomStore extends RoomStore {

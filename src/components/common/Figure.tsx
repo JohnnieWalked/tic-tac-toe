@@ -13,7 +13,7 @@ export default function Figure({ role, className }: FigureProps) {
   const classes = twMerge('w-fit h-fit', className);
 
   if (!role) {
-    return <span className=" text-lg font-medium pl-1">no role</span>;
+    return <div className="pl-1">no role</div>;
   }
 
   const renderFigure = () => {
@@ -22,7 +22,7 @@ export default function Figure({ role, className }: FigureProps) {
     }
     if (role === 'o') {
       return (
-        <RxCircle className=" w-full h-full stroke-1 text-yellow-500 p-[0.3px]" />
+        <RxCircle className=" w-full h-full stroke-1 text-yellow-500 p-[2px]" />
       );
     }
   };

@@ -1,11 +1,25 @@
 'use client';
 
+import React from 'react';
+import { useToast } from './ui/use-toast';
+
+/* socket */
+import { socket, socketEvents } from '@/socket';
+
+/* rtk */
+import { useAppSelector } from '@/hooks/hooks';
+
+/* types */
+import { IResponseFromServer } from '@/types';
+
+/* ui */
 import { Button } from './ui/button';
 import { motion } from 'framer-motion';
 
 type GameSquareProps = {
   player: 1 | 2 | number;
-  isDisabled?: boolean;
+  pressedSquareIndex: number;
+  isDisabledByParent?: boolean;
   className?: string;
   children?: React.ReactNode;
 };
@@ -23,10 +37,13 @@ export const draw = {
 };
 
 export default function GameSquare({
-  isDisabled,
+  isDisabledByParent,
   className,
+  pressedSquareIndex,
   player,
 }: GameSquareProps) {
+  const { toast } = useToast();
+  const { roomname } = useAppSelector((state) => state.roomSlice);
   function fillSquare() {
     switch (player) {
       case 1: {
@@ -74,9 +91,47 @@ export default function GameSquare({
     }
   }
 
+  const handleClick = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    if (!roomname) return;
+
+    const buttonValue = +event.currentTarget.value;
+    if (buttonValue !== 0) {
+      toast({
+        title: 'Oops!',
+        variant: 'destructive',
+        description: 'This square has been already marked.',
+      });
+      return;
+    }
+    console.log(buttonValue);
+    socket.emit(
+      socketEvents.PLACE_MARK,
+      { roomname, pressedSquareIndex },
+      (response: IResponseFromServer) => {
+        if (response.success) {
+          toast({
+            title: response.description,
+          });
+        } else {
+          toast({
+            title: 'Something went wrong!',
+            variant: 'destructive',
+            description: response.description,
+          });
+        }
+      }
+    );
+  };
+
   return (
     <Button
-      disabled={isDisabled}
+      value={player}
+      onClick={(e) => handleClick(e)}
+      disabled={
+        player === 0 ? isDisabledByParent : true
+      } /* disable button if it has player value (1 or 2) */
       className={`p-4 bg-background text-primary w-full h-full flex items-center justify-center ${className}`}
     >
       <motion.svg
