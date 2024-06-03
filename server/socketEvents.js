@@ -16,6 +16,7 @@ const socketEvents = {
   ROOM_ROLES: 'room roles',
   WATCH_GAMESTATE: 'watch gamestate',
   PLACE_MARK: 'place mark',
+  WINNER: 'winner',
 };
 
 module.exports = {

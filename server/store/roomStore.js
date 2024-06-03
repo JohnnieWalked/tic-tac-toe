@@ -18,10 +18,10 @@
  * @property {string} password - The password for the room.
  * @property {number[][]} gameState - The game state of the room.
  * @property {Participator[]} participators - The list of participators in the room.
- * @property {string|null} x - The X role of the participator.
- * @property {string|null} o - The O role of the participator.
- * @property {string|null} whoseTurn - Indicates whose turn it is.
- * @property {string|null} winner - Indicates userID of the winner.
+ * @property {string|null} x - The X role of the participator (contains userID).
+ * @property {string|null} o - The O role of the participator (contains userID).
+ * @property {string|null} whoseTurn - Indicates whose turn it is (contains userID).
+ * @property {string|null} winner - Indicates userID of the winner (contains username).
  */
 
 class InMemoryRoomStore extends RoomStore {

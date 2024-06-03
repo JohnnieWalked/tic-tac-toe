@@ -3,6 +3,7 @@ const {
   hashPassword,
   getInfoAboutUsersInRoom,
   comparePasswords,
+  calculateWinner,
 } = require('./helpers/index');
 const { socketEvents } = require('./socketEvents');
 /* types */
@@ -276,17 +277,30 @@ module.exports = (io, socket, roomStore) => {
               description: 'This role is already taken!',
             });
           }
+
+          /* change whoseTurn if state of the gamefield is empty (before game begins) */
+          /* gamefield consists of array of numbers -> (0 - empty square; 1 - square with "X" mark; 2 - with "O" mark) */
+          if (room.gameState.flat().every((item) => item === 0)) {
+            if (selectedRole === 'x') {
+              room.whoseTurn = socket.userID;
+            }
+          } else {
+            return callback({
+              success: false,
+              description:
+                'You can not change role during the game! Please, try again before starting the game.',
+            });
+          }
+
+          /* clear role 'X' or 'O' if user was assigned to one of them */
           if (room.x === socket.userID) {
             room.x = null;
           }
           if (room.o === socket.userID) {
             room.o = null;
           }
+          /* assign user to specific role */
           room[selectedRole] = socket.userID;
-
-          if (selectedRole === 'x') {
-            room.whoseTurn = socket.userID;
-          }
 
           /* if role does NOT have a value -> update roomStore data */
           roomStore.updateRoom(roomname, { ...room });
@@ -357,7 +371,7 @@ module.exports = (io, socket, roomStore) => {
         if (room.winner) {
           return callback({
             success: true,
-            description: 'Game over! You still can have a rematch.',
+            description: 'Game over! But you can still have a rematch.',
           });
         }
 
@@ -380,30 +394,63 @@ module.exports = (io, socket, roomStore) => {
         2 indicates seconds player ("O" mark)
         */
         const socketSelectedRole = room.x === socket.userID ? 1 : 2;
-        const newGameState = [...room.gameState.map((row) => [...row])];
+        const newGameState = structuredClone(room.gameState);
         const foundSquareUsingIndex = newGameState
           .flat()
           .find((item, index) => index === pressedSquareIndex);
 
-        if (foundSquareUsingIndex === 0) {
-          /* find which row need to be selected */
-          const targetRowIndex = Math.floor(pressedSquareIndex / FIELD_SIZE);
-          /* find which col need to be selected */
-          const targetColIndex = pressedSquareIndex % FIELD_SIZE;
-          newGameState[targetRowIndex][targetColIndex] = socketSelectedRole;
-          roomStore.updateRoom(roomname, { gameState: newGameState });
-        } else {
+        if (foundSquareUsingIndex !== 0) {
           return callback({
             success: false,
             description: 'This square has been already marked!',
           });
         }
 
+        /* 
+          find which row need to be selected 
+          logic:
+          1) on client-side squares are rendered one by one (from 0 to 9 (depends on FIELD_SIZE))
+          2) client presses the specific square and server recieves an index of pressed square
+          3) because of room.gameState is an array of array ([[],[],[]]) we need to know where the square we need was pressed
+          4) to get row (top, mid or bottom line) we use "/" (example -> 5 / 3 = ~1.6 -> result index 1 (second row))
+          5) to get col - we use "%" (example -> 5 % 3 = 2 (remainder is 2 so we need value with index 2))
+          6) pressedSqureIndex = 5 -> row - 1, col - 2 -> room.gameState[1][2] = user's role (X or O (1 or 2))
+        */
+        const targetRowIndex = Math.floor(pressedSquareIndex / FIELD_SIZE);
+
+        /* find which col need to be selected */
+        const targetColIndex = pressedSquareIndex % FIELD_SIZE;
+
+        newGameState[targetRowIndex][targetColIndex] = socketSelectedRole;
+
+        const winner = calculateWinner(newGameState, FIELD_SIZE);
+
+        /* update game state and update turn (find user that is not assigned to whoseTurn and assign his userID to whoseTurn) */
+        roomStore.updateRoom(roomname, {
+          gameState: newGameState,
+          whoseTurn: room.participators.find(
+            (item) => item.userID !== room.whoseTurn
+          ).userID,
+          winner: winner ? winner : null,
+        });
+
         console.log(roomStore.findRoom(roomname));
 
         const data = {
           gameState: newGameState,
         };
+
+        if (winner) {
+          const data = {
+            winner:
+              winner === 1
+                ? room.participators.find((item) => item.userID === room.x)
+                    .username
+                : room.participators.find((item) => item.userID === room.o)
+                    .username,
+          };
+          io.to(roomname).emit(socketEvents.WINNER, data);
+        }
 
         io.to(roomname).emit(socketEvents.WATCH_GAMESTATE, data);
       }

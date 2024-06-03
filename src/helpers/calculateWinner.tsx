@@ -1,8 +1,6 @@
 export function calculateWinner(array: number[][], fieldSize = 3) {
   if (!array || !array.length || array.length !== fieldSize) {
-    return console.error(
-      'Field size and game field do not match, or array.length = undefined'
-    );
+    throw Error('Field size and game field do not match, or array = undefined');
   }
 
   /* recursion; created to optimize vertical_&_diagonal search logic for gamefield of any size; shift is need for diagonally check */

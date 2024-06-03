@@ -44,6 +44,7 @@ export default function GameSquare({
 }: GameSquareProps) {
   const { toast } = useToast();
   const { roomname } = useAppSelector((state) => state.roomSlice);
+
   function fillSquare() {
     switch (player) {
       case 1: {
@@ -105,7 +106,6 @@ export default function GameSquare({
       });
       return;
     }
-    console.log(buttonValue);
     socket.emit(
       socketEvents.PLACE_MARK,
       { roomname, pressedSquareIndex },
