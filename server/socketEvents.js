@@ -17,6 +17,8 @@ const socketEvents = {
   WATCH_GAMESTATE: 'watch gamestate',
   PLACE_MARK: 'place mark',
   WINNER: 'winner',
+  REMATCH_VOTE: 'rematch vote',
+  VOTES: 'votes',
 };
 
 module.exports = {

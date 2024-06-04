@@ -65,6 +65,7 @@ module.exports = (io, socket, roomStore) => {
           o: null,
           whoseTurn: null,
           winner: null,
+          rematchVotes: [],
         });
 
         const roomData = {
@@ -457,6 +458,67 @@ module.exports = (io, socket, roomStore) => {
     );
   };
 
+  /* vote for rematch */
+  const handleRematchVotes = () => {
+    socket.on(socketEvents.REMATCH_VOTE, ({ roomname }, callback) => {
+      const room = roomStore.findRoom(roomname);
+      if (!room) return;
+
+      if (room.rematchVotes.find((item) => item.userID === socket.userID)) {
+        return callback({
+          success: false,
+          description:
+            'You have already voted. Please, wait for opponent to vote.',
+        });
+      }
+
+      const newRematchVotes = [
+        ...room.rematchVotes,
+        { userID: socket.userID, username: socket.username },
+      ];
+
+      /* if votes === 2 -> reset game */
+      if (newRematchVotes.length === 2) {
+        const resetedGameState = [
+          [0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0],
+        ];
+        roomStore.updateRoom(roomname, {
+          rematchVotes: [],
+          gameState: resetedGameState,
+          winner: null,
+          whoseTurn: room.x,
+        });
+
+        const data = {
+          gameState: resetedGameState,
+        };
+
+        io.to(roomname).emit(socketEvents.WATCH_GAMESTATE, data);
+        io.to(roomname).emit(socketEvents.VOTES, []);
+      } else {
+        roomStore.updateRoom(roomname, { rematchVotes: newRematchVotes });
+        io.to(roomname).emit(socketEvents.VOTES, newRematchVotes);
+      }
+
+      return callback({
+        success: true,
+        description: 'Successfully voted!',
+      });
+    });
+  };
+
+  /* listen how many users vote to rematch */
+  const listenForRematchVotes = () => {
+    socket.on(socketEvents.VOTES, ({ roomname }) => {
+      const room = roomStore.findRoom(roomname);
+      if (!room) return;
+
+      io.to(roomname).emit(socketEvents.VOTES, room.rematchVotes);
+    });
+  };
+
   allRooms();
   createRoom();
   joinRoom();
@@ -468,4 +530,6 @@ module.exports = (io, socket, roomStore) => {
   roomRoles();
   listenGameField();
   handlePlaceMark();
+  handleRematchVotes();
+  listenForRematchVotes();
 };

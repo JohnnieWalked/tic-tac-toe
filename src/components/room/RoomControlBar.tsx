@@ -27,7 +27,7 @@ import { Button } from '../ui/button';
 import PrimaryButton from '../common/PrimaryButton';
 
 /* types */
-import type { IResponseFromServer } from '@/types';
+import type { IResponseFromServer, IRoomParticipator } from '@/types';
 import Figure from '../common/Figure';
 
 type RoomControlBarProps = {
@@ -45,6 +45,7 @@ export default function RoomControlBar({
   );
   const { toast } = useToast();
   const [showDialog, setShowDialog] = useState(false);
+  const [rematchVotes, setRematchVotes] = useState<IRoomParticipator[]>();
 
   /* reconnect if user refreshed the page  */
   useEffect(() => {
@@ -82,14 +83,21 @@ export default function RoomControlBar({
       dispatch(roomSliceActions.assignRoles(data));
     }
 
+    function updateRematchVotes(data: IRoomParticipator[]) {
+      setRematchVotes(data);
+    }
+
     socket.emit(socketEvents.USERS_IN_ROOM, { roomname });
     socket.on(socketEvents.USERS_IN_ROOM, roomParticipators);
     socket.emit(socketEvents.ROOM_ROLES, { roomname });
     socket.on(socketEvents.ROOM_ROLES, assignRolesToParticipators);
+    socket.emit(socketEvents.VOTES, { roomname });
+    socket.on(socketEvents.VOTES, updateRematchVotes);
 
     return () => {
       socket.off(socketEvents.USERS_IN_ROOM, roomParticipators);
       socket.off(socketEvents.ROOM_ROLES, assignRolesToParticipators);
+      socket.off(socketEvents.VOTES, updateRematchVotes);
     };
   }, [dispatch, roomname]);
 
@@ -98,7 +106,7 @@ export default function RoomControlBar({
 
     socket.emit(
       socketEvents.ROLE_SELECTION,
-      { selectedRole: roleSelected, roomname: roomnameURLQuery },
+      { selectedRole: roleSelected, roomname },
       (response: IResponseFromServer) => {
         if (response.success) {
           toast({
@@ -113,6 +121,27 @@ export default function RoomControlBar({
           });
         }
         setShowDialog(false);
+      }
+    );
+  };
+
+  const handleVoteSubmit = (formData: FormData) => {
+    socket.emit(
+      socketEvents.REMATCH_VOTE,
+      { roomname },
+      (response: IResponseFromServer) => {
+        if (response.success) {
+          toast({
+            title: 'Success!',
+            description: response.description,
+          });
+        } else {
+          toast({
+            title: 'Error!',
+            variant: 'destructive',
+            description: response.description,
+          });
+        }
       }
     );
   };
@@ -213,6 +242,15 @@ export default function RoomControlBar({
       <div className="flex flex-col items-center justify-center">
         {renderedParticipators}
       </div>
+
+      <Subheader>Vote for rematch</Subheader>
+      {rematchVotes?.find((user) => user.userID === socket.userID) ? (
+        <div>Voted</div>
+      ) : (
+        <form action={handleVoteSubmit}>
+          <PrimaryButton>Vote</PrimaryButton>
+        </form>
+      )}
     </div>
   );
 }

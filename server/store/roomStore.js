@@ -22,6 +22,7 @@
  * @property {string|null} o - The O role of the participator (contains userID).
  * @property {string|null} whoseTurn - Indicates whose turn it is (contains userID).
  * @property {string|null} winner - Indicates userID of the winner (contains username).
+ * @property {Participator[]} rematchVotes - Indicates array of participators with agreement to rematch.
  */
 
 class InMemoryRoomStore extends RoomStore {

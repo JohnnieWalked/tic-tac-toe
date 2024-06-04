@@ -85,10 +85,14 @@ export default function GameField({
     if (animateGameplay || !roomname) return;
 
     function updateGameState(data: { gameState: number[][] }) {
+      /* if game was reset -> reset gameover and endline */
+      if (data.gameState.flat().every((item) => item === 0)) {
+        setGameOver(false);
+        setEndLinePosition(undefined);
+      }
       setGameState(data.gameState);
     }
-    function setWinner(data: { winner: string }) {
-      setGameOver(true);
+    function annonceWinner(data: { winner: string }) {
       toast({
         title: `${data.winner} wins!`,
       });
@@ -96,11 +100,11 @@ export default function GameField({
 
     socket.emit(socketEvents.WATCH_GAMESTATE, { roomname });
     socket.on(socketEvents.WATCH_GAMESTATE, updateGameState);
-    socket.on(socketEvents.WINNER, setWinner);
+    socket.on(socketEvents.WINNER, annonceWinner);
 
     return () => {
       socket.off(socketEvents.WATCH_GAMESTATE, updateGameState);
-      socket.off(socketEvents.WINNER, setWinner);
+      socket.off(socketEvents.WINNER, annonceWinner);
     };
   }, [animateGameplay, roomname, toast]);
 
