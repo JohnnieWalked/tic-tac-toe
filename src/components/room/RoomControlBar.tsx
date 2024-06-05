@@ -40,7 +40,7 @@ export default function RoomControlBar({
   passwordURLQuery,
 }: RoomControlBarProps) {
   const dispatch = useAppDispatch();
-  const { roomname, participators } = useAppSelector(
+  const { roomname, participators, roles } = useAppSelector(
     (state) => state.roomSlice
   );
   const { toast } = useToast();
@@ -146,6 +146,14 @@ export default function RoomControlBar({
     );
   };
 
+  function assignRoleToUser(publicUserID: string) {
+    let role;
+    for (const [key, value] of Object.entries(roles)) {
+      if (value === publicUserID) role = key as 'x' | 'o';
+    }
+    return role;
+  }
+
   const renderedParticipators = participators.map((user) => {
     return (
       <div
@@ -153,7 +161,10 @@ export default function RoomControlBar({
         key={user.userID}
       >
         <span>{user.username}:</span>{' '}
-        <Figure className=" w-7 h-7 ml-2" role={user.role} />
+        <Figure
+          className=" w-7 h-7 ml-2"
+          role={assignRoleToUser(user.userID)}
+        />
       </div>
     );
   });
@@ -162,12 +173,7 @@ export default function RoomControlBar({
     <div className="relative grid grid-rows-[minmax(min-content,_auto)_1fr] grid-flow-col gap-y-3 place-items-center">
       <Subheader className="">Current mark </Subheader>
       <div className="flex flex-col justify-between items-center gap-2">
-        <Figure
-          className=" w-10 h-10"
-          role={
-            participators.find((item) => item.userID === socket.userID)?.role
-          }
-        />
+        <Figure className=" w-10 h-10" role={assignRoleToUser(socket.userID)} />
         <Dialog onOpenChange={setShowDialog} open={showDialog}>
           <DialogTrigger asChild>
             <Button

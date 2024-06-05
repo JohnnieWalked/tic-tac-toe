@@ -63,7 +63,7 @@ export default function CreateRoomForm() {
             });
             dispatch(roomSliceActions.setRoomName(result.data.roomname));
             router.push(
-              `/new-game/game-room?roomname=${result.data.roomname}&?password=${response.hashedPassword}`
+              `/new-game/game-room?roomname=${result.data.roomname}&password=${response.hashedPassword}`
             );
           } else {
             toast({

@@ -1,12 +1,15 @@
 export interface IRoomParticipator {
   userID: string;
   username: string;
-  role?: 'x' | 'o';
 }
 
 export interface IRoom {
   roomname: string;
   participators: IRoomParticipator[] | never[];
+  roles: {
+    x: string | null;
+    o: string | null;
+  };
 }
 
 export interface IResponseFromServer {

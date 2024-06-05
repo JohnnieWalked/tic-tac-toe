@@ -57,7 +57,7 @@ export default function NewGamePage() {
     return () => {
       socket.off(socketEvents.ROOM_UPDATE);
     };
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     setOnlineUsers(allUsersArray.filter((user) => user.connected === true));

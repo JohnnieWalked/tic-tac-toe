@@ -17,17 +17,24 @@ export default function LeaveRoomButton() {
 
   /* leave room after leaving page */
   useEffect(() => {
-    return () => {
+    function leavePage() {
       if (!roomname) return;
       socket.emit(
         socketEvents.LEAVE_ROOM,
         { roomname },
-        (response: { status: number }) => {
-          if (response.status === 200) {
+        (response: { success: boolean }) => {
+          if (response.success) {
             dispatch(roomSliceActions.setRoomName(''));
           }
         }
       );
+    }
+
+    window.addEventListener('popstate', leavePage);
+
+    return () => {
+      leavePage();
+      window.removeEventListener('popstate', leavePage);
     };
   }, [dispatch, roomname]);
 

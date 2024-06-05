@@ -10,6 +10,10 @@ import type { IRoom, IRoomParticipator } from '@/types';
 const initialState: IRoom = {
   roomname: '',
   participators: [],
+  roles: {
+    x: null,
+    o: null,
+  },
 };
 
 export const roomSlice = createSlice({
@@ -26,17 +30,18 @@ export const roomSlice = createSlice({
       state,
       action: PayloadAction<{ x: string | null; o: string | null }>
     ) {
-      return produce(state, (draft) => {
-        draft.participators.forEach((participator) => {
-          for (const [keyRole, userID] of Object.entries(action.payload)) {
-            if (participator.userID === userID) {
-              participator.role = keyRole as 'x' | 'o';
-              return;
-            }
-            participator.role = undefined;
-          }
-        });
-      });
+      state.roles = action.payload;
+      // return produce(state, (draft) => {
+      //   draft.participators.forEach((participator) => {
+      //     for (const [keyRole, userID] of Object.entries(action.payload)) {
+      //       if (participator.userID === userID) {
+      //         participator.role = keyRole as 'x' | 'o';
+      //         return;
+      //       }
+      //       participator.role = undefined;
+      //     }
+      //   });
+      // });
     },
   },
 });

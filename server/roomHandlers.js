@@ -116,10 +116,10 @@ module.exports = (io, socket, roomStore) => {
           });
         }
 
-        /* if room is protected by password -> compare password with hash */
+        /* if room is protected by password -> compare password with hash; if user joins via direct link -> we should compare hashes directly */
         if (room.password) {
           const passwordMatch = await comparePasswords(password, room.password);
-          if (!passwordMatch) {
+          if (!passwordMatch && password !== room.password) {
             return callback({
               success: false,
               description: 'Incorrect password!',
@@ -179,20 +179,8 @@ module.exports = (io, socket, roomStore) => {
   const leaveRoom = () => {
     socket.on(socketEvents.LEAVE_ROOM, async ({ roomname }, callback) => {
       const room = roomStore.findRoom(roomname);
-      if (!room) {
-        return callback({
-          success: false,
-          description: 'Room does not exist!',
-        });
-      }
-      /* prepare data about user that are going to leave */
-      const data = {
-        username: socket.username,
-        userID: socket.userID,
-        abandon: true,
-      };
-      /* send msg about user who left */
-      io.to(roomname).emit(socketEvents.CHAT_MESSAGE, data);
+      if (!room) return;
+
       socket.leave(roomname);
 
       /* get up-to-date users data in room */
@@ -214,7 +202,18 @@ module.exports = (io, socket, roomStore) => {
       };
       io.emit(socketEvents.ROOM_UPDATE, updatedDataForRoom);
 
-      callback({ status: 200 });
+      /* prepare data about user that are going to leave */
+      const data = {
+        username: socket.username,
+        userID: socket.userID,
+        abandon: true,
+      };
+      /* send msg about user who left */
+      io.to(roomname).emit(socketEvents.CHAT_MESSAGE, data);
+
+      callback({
+        success: true,
+      });
     });
   };
 
