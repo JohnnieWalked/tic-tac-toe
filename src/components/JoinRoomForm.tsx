@@ -24,6 +24,7 @@ import {
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import PrimaryButton from './common/PrimaryButton';
+import { IResponseFromServer } from '@/types';
 
 type JoinRoomProps = {
   inputNameAttr: string;
