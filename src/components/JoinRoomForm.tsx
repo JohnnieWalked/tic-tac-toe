@@ -52,7 +52,7 @@ export default function JoinRoomForm({
         description: result.description,
       });
       return router.push(
-        `/new-game/game-room?roomname=${roomname}&?password=${result.hashedPassword}`
+        `/new-game/game-room?roomname=${roomname}&password=${result.hashedPassword}`
       );
     }
 

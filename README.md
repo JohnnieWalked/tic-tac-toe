@@ -11,6 +11,7 @@
     - [Creating, joining and leaving lobby](#creating-joining-and-leaving-lobby)
     - [Game Room (Lobby)](#game-room-lobby)
     - [Other mentions](#other-mentions)
+    - [Presentation](#presentation)
 
 ---
 
@@ -52,7 +53,7 @@ In case of connection interruption - user will be automatically reconnected usin
 
 ### Creating, joining and leaving lobby
 
-- *Creating a room*
+- *Creating a room*.\
 User can create the game lobby (public / private). All data about room will be store inside [roomStore.js](<server/store/roomStore.js>). The password will be hashed and saved in encrypted form. After successful creation - user will be forwarded to new page with URL params: `roomname` and `password` (*url-example: /new-game/game-room?roomname=Test%20room&?password=$2a$10$JUPF4coInbQlsuIZugtNNu3Gm3fFCx8OdoHvOlrdUSL.pfqaXtXd6*).
 
 ```js
@@ -76,7 +77,7 @@ User can create the game lobby (public / private). All data about room will be s
  */
  ```
 
-- *Joining the room*
+- *Joining the room*.\
 User has several options to join the lobby (room):
   - use filter inside lobby table;
   - use the direct link of the lobby, provided by friend.
@@ -85,7 +86,7 @@ In case joining using lobby table user will be going to need a password.
 
 ![Dialog password](image-1.png)
 
-- *Leaving the room*
+- *Leaving the room*.\
 There are options how user can leave room:
   - By pressing the `Leave game` button;
   - By leaving the page (via browser buttons `->` `<-` (*popstate event*) / by pressing navlink or another href).
@@ -108,4 +109,12 @@ Game room consists of four parts:
 ### Other mentions
 
 - To draw an end-game line (vertical or horizontal) we use a proportion to make it adaptive to any size of a field. Visit [calculateWinner.tsx](<src/helpers/calculateWinner.tsx>) to see more details.
+- All svg paths animations was created using framer-motion.
+- Files `template.tsx` are used for re-rendering our pages instead of using cached vesions of pages so our framer-motion animations will work every time user visits a page.\
+Using a template doesn't cause our entire app to re-render on navigation. Our page server components will still use the cache. The only thing re-rendering is the template file itself.
 
+### Presentation
+
+[Video presentation](<Presentation.mp4>)
+
+<video controls src="Presentation.mp4" title="Presentation"></video>
