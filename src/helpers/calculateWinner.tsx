@@ -43,6 +43,10 @@ export function calculateWinner(array: number[][], fieldSize = 3) {
       return {
         /* 
           logic: make a proportion and find end of square; after that we divide full width/height of gameField by FIELD_SIZE and after divide by 2 to find center of block
+
+           100 / fieldSize / 2 -> means the center of square
+           (i + 1) / fieldSize) * 100 -> find the end of a square to start from
+
         */
         endGameAnimationStartFrom: {
           x1: `${((i + 1) / fieldSize) * 100 - 100 / fieldSize / 2}%`, //  i + 1 is needed to avoid starting from 0

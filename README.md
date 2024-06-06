@@ -10,6 +10,7 @@
     - [Registration](#registration)
     - [Creating, joining and leaving lobby](#creating-joining-and-leaving-lobby)
     - [Game Room (Lobby)](#game-room-lobby)
+    - [Other mentions](#other-mentions)
 
 ---
 
@@ -103,3 +104,8 @@ Game room consists of four parts:
   - place where participators can chat and get information about online status. Also chat notifies user about joining and leaving other users.
 - Abandon button:
   - button which let user leave the room.
+
+### Other mentions
+
+- To draw an end-game line (vertical or horizontal) we use a proportion to make it adaptive to any size of a field. Visit [calculateWinner.tsx](<src/helpers/calculateWinner.tsx>) to see more details.
+

@@ -70,7 +70,7 @@ export default function NewGamePage() {
           <Subheader className=" flex gap-4">
             Players online:{' '}
             <span className=" font-light text-cyan-400">
-              {onlineUsers.length} / {allUsersArray.length}
+              {onlineUsers.length}
             </span>
           </Subheader>
           <CreateRoomForm />
